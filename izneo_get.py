@@ -3,7 +3,7 @@ __version__ = "0.02"
 """
 Ce script permet de récupérer une BD présente sur https://www.izneo.com/fr/ dans la limite des capacités de notre compte existant.
 
-usage: python izneo_get.py [-h] 
+Utilisation : python izneo_get.py [-h] 
                 [--cfduid CFDUID]
                 [--session-id SESSION_ID] 
                 [--output-folder OUTPUT_FOLDER]
@@ -22,7 +22,7 @@ import html
 import argparse
 import configparser
 import shutil
-
+import time
 
 def strip_tags(html):
     """Permet de supprimer tous les tags HTML d'une chaine de caractère.
@@ -88,7 +88,13 @@ if __name__ == "__main__":
         "--config", type=str, default=None, help="Fichier de configuration"
     )
     parser.add_argument(
+        "--from-page", type=int, default=0, help="Première page à récupérer (défaut : 0)"
+    )
+    parser.add_argument(
         "--limit", type=int, default=1000, help="Nombre de pages à récupérer au maximum (défaut : 1000)"
+    )
+    parser.add_argument(
+        "--pause", type=int, default=0, help="Pause (en secondes) à respecter après chaque téléchargement d'image"
     )
     args = parser.parse_args()
 
@@ -120,6 +126,8 @@ if __name__ == "__main__":
     url = args.url
     output_format = args.output_format
     nb_page_limit = args.limit
+    from_page = args.from_page
+    pause_sec = args.pause
 
 
     # Création d'une session et création du cookie.
@@ -219,20 +227,22 @@ if __name__ == "__main__":
 
         # On boucle sur toutes les pages de la BD.
         for page in range(min(nb_pages + page_sup_to_grab, nb_page_limit)):
-        #for page in range(3):
-            url = "https://reader.izneo.com/read/" + str(isbn) +  "/" + str(page) + "?quality=HD"
+            page_num = page + from_page
+            url = "https://reader.izneo.com/read/" + str(isbn) +  "/" + str(page_num) + "?quality=HD"
             r = s.get(url, cookies=s.cookies, allow_redirects=True)
             if r.status_code == 404:
                 if page < nb_pages:
                     print("[WARNING] On a récupéré " + str(page + 1) + " pages (au moins " + str(nb_pages) + " attendues)")
                 break
             if re.findall("<!DOCTYPE html>", r.text):
-                print("[WARNING] Page " + str(page + 1) + " inaccessible")
+                print("[WARNING] Page " + str(page_num) + " inaccessible")
                 break
 
-            page_txt = ("000000000" + str(page))[-nb_digits:]
+            page_txt = ("000000000" + str(page_num))[-nb_digits:]
             file = open(save_path + "/" + title + " - " + page_txt + ".jpg", "wb").write(r.content)
             print(".", end="")
+            sys.stdout.flush()
+            time.sleep(pause_sec)
         print("OK")
 
         # Si besoin, on crée une archive.
