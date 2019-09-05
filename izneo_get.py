@@ -221,6 +221,7 @@ if __name__ == "__main__":
             mid_path += "/"
 
         print("Téléchargement de \"" + clean_name(title + serie + author) + "\"")
+        print(str(nb_pages) + " pages attendues")
         save_path = output_folder + "/" + mid_path + clean_name(title + serie + author)
         if not os.path.exists(save_path): os.mkdir(save_path)
         print("Destination : " + save_path)
