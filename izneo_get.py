@@ -114,7 +114,7 @@ if __name__ == "__main__":
 
     cfduid = get_param_or_default(config, "cfduid", "", args.cfduid)
     session_id = get_param_or_default(config, "session_id", "", args.session_id)
-    output_folder = get_param_or_default(config, "output_folder", os.path.dirname(os.path.abspath(sys.argv[0])) + "/DOWNLOAD", args.output_folder)
+    output_folder = get_param_or_default(config, "output_folder", os.path.dirname(os.path.abspath(sys.argv[0])) + "/DOWNLOADS", args.output_folder)
     if not os.path.exists(output_folder): os.mkdir(output_folder)
     url = args.url
     output_format = args.output_format
