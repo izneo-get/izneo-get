@@ -205,7 +205,7 @@ if __name__ == "__main__":
             break
 
         page_txt = ("000000000" + str(page))[-nb_digits:]
-        file = open(save_path + "\\" + title + " - " + page_txt + ".jpg", "wb").write(r.content)
+        file = open(save_path + "/" + title + " - " + page_txt + ".jpg", "wb").write(r.content)
 
     # Si besoin, on crée une archive.
     if output_format == "cbz" or output_format == "both":
