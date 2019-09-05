@@ -41,6 +41,6 @@ Ces valeurs peuvent être stockées dans le fichier de configuration "izneo_get.
 
 
 # Prérequis
-L'ordinateur doit posséder les librairies OpenSSL. 
-
+Python 3
 pip install -r requirements.txt
+L'ordinateur doit posséder les librairies OpenSSL. 
