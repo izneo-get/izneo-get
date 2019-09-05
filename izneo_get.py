@@ -55,6 +55,7 @@ def clean_name(name):
     chars = "\\/:*<>?\"|"
     for c in chars:
         name = name.replace(c, "_")
+    name = re.sub("\s+", " ", name)
     return name
 
 
