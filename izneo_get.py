@@ -111,7 +111,7 @@ if __name__ == "__main__":
 
     cfduid = get_param_or_default(config, "cfduid", "", args.cfduid)
     session_id = get_param_or_default(config, "session_id", "", args.session_id)
-    output_folder = get_param_or_default(config, "output_folder", os.path.dirname(os.path.abspath(sys.argv[0])) + "/DOWNLOADS", args.output_folder)
+    output_folder = get_param_or_default(config, "output_folder", os.path.dirname(os.path.abspath(sys.argv[0])) + "/DOWNLOAD", args.output_folder)
     if not os.path.exists(output_folder): os.mkdir(output_folder)
     url = args.url
     output_format = args.output_format
@@ -189,12 +189,14 @@ if __name__ == "__main__":
         if not os.path.exists(output_folder + "/" + mid_path): os.mkdir(output_folder + "/" + mid_path)
         mid_path += "/"
 
+    print("Téléchargement de \"" + clean_name(title + serie + author) + "\"")
     save_path = output_folder + "/" + mid_path + clean_name(title + serie + author)
     if not os.path.exists(save_path): os.mkdir(save_path)
+    print("Destination : " + save_path)
 
     # On boucle sur toutes les pages de la BD.
     for page in range(nb_pages + page_sup_to_grab):
-    #for page in range(2):
+    #for page in range(3):
         url = "https://reader.izneo.com/read/" + str(isbn) +  "/" + str(page) + "?quality=HD"
         r = s.get(url, cookies=s.cookies, allow_redirects=True)
         if r.status_code == 404:
@@ -207,13 +209,34 @@ if __name__ == "__main__":
 
         page_txt = ("000000000" + str(page))[-nb_digits:]
         file = open(save_path + "/" + title + " - " + page_txt + ".jpg", "wb").write(r.content)
+        print(".", end="")
+    print("OK")
 
     # Si besoin, on crée une archive.
     if output_format == "cbz" or output_format == "both":
-        shutil.make_archive(save_path, 'zip', save_path)
-        os.rename(save_path + ".zip", save_path + ".cbz")
+        print("Création du CBZ")
+        # Dans le cas où un fichier du même nom existe déjà, on change de nom.
+        filler_txt = ""
+        if os.path.exists(save_path + ".zip"):
+            filler_txt += "_"
+            max_attempts = 20
+            while os.path.exists(save_path + filler_txt + ".zip") and max_attempts > 0:
+                filler_txt += "_"
+                max_attempts -= 1
+        shutil.make_archive(save_path + filler_txt, 'zip', save_path)
+
+        filler_txt2 = ""
+        if os.path.exists(save_path + ".cbz"):
+            filler_txt2 += "_"
+            max_attempts = 20
+            while os.path.exists(save_path + filler_txt2 + ".cbz") and max_attempts > 0:
+                filler_txt2 += "_"
+                max_attempts -= 1
+        os.rename(save_path + filler_txt + ".zip", save_path + filler_txt2 + ".cbz")
 
     # Si besoin, on supprime le répertoire des JPG.
     if output_format == "cbz":
         shutil.rmtree(save_path)
+
+    print("Terminé !")
 
