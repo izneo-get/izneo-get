@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-__version__ = "0.01"
+__version__ = "0.02"
 """
 Ce script permet de récupérer une BD présente sur https://www.izneo.com/fr/ dans la limite des capacités de notre compte existant.
 
@@ -69,7 +69,7 @@ if __name__ == "__main__":
     description="""Script pour sauvegarder une BD Izneo."""
     )
     parser.add_argument(
-        "url", type=str, default=None, help="L'URL de la BD à récupérer"
+        "url", type=str, default=None, help="L'URL de la BD à récupérer ou le chemin vers un fichier local contenant une liste d'URLs"
     )
     parser.add_argument(
         "--session-id", "-s", type=str, default=None, help="L'identifiant de session"
@@ -85,6 +85,9 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--config", type=str, default=None, help="Fichier de configuration"
+    )
+    parser.add_argument(
+        "--limit", type=int, default=1000, help="Nombre de pages à récupérer au maximum (défaut : 1000)"
     )
     args = parser.parse_args()
 
@@ -115,6 +118,8 @@ if __name__ == "__main__":
     if not os.path.exists(output_folder): os.mkdir(output_folder)
     url = args.url
     output_format = args.output_format
+    nb_page_limit = args.limit
+
 
     # Création d'une session et création du cookie.
     s = requests.Session()
@@ -125,118 +130,135 @@ if __name__ == "__main__":
     cookie_obj = requests.cookies.create_cookie(domain='.izneo.com', name='c03aab1711dbd2a02ea11200dde3e3d1', value=session_id)
     s.cookies.set_cookie(cookie_obj)
 
-    
-
-    # On récupère les informations de la BD à récupérer.
-    r = s.get(url, cookies=s.cookies, allow_redirects=True)
-    html_one_line = r.text.replace("\n", "").replace("\r", "")
-    
-    # Le titre.
-    title = re.findall("<meta property=\"og:title\" content=\"(.+?)\" />", html_one_line)
-    if len(title) > 0:
-        title = strip_tags(title[0]).strip()
+    # Liste des URLs à récupérer.
+    url_list = []
+    if os.path.exists(url):
+        f = open(url, 'r')
+        lignes = f.readlines()
+        f.close()
+        for ligne in lignes:
+            if ligne[0] != '#':
+                ligne = ligne.strip()
+                url_list.append(ligne)
     else:
-        title = re.findall("<h1 class=\"product-title\" itemprop=\"name\">(.+?)</h1>", html_one_line)
+        url_list.append(url)
+
+    for url in url_list:
+        print("URL: " + url)
+        # On récupère les informations de la BD à récupérer.
+        r = s.get(url, cookies=s.cookies, allow_redirects=True)
+        html_one_line = r.text.replace("\n", "").replace("\r", "")
+        
+        # Le titre.
+        title = re.findall("<meta property=\"og:title\" content=\"(.+?)\" />", html_one_line)
         if len(title) > 0:
             title = strip_tags(title[0]).strip()
-    title = html.unescape(title)
-    title = clean_name(title)
+        else:
+            title = re.findall("<h1 class=\"product-title\" itemprop=\"name\">(.+?)</h1>", html_one_line)
+            if len(title) > 0:
+                title = strip_tags(title[0]).strip()
+            else:
+                title = ""
+        title = html.unescape(title)
+        title = clean_name(title)
 
-    # L'ISBN, qui servira d'identifiant de la BD.
-    isbn = re.findall("href=\"//reader.izneo.com/read/(.+?)\?exiturl", html_one_line)
-    if len(isbn) > 0:
-        isbn = strip_tags(isbn[0]).strip()
+        # L'ISBN, qui servira d'identifiant de la BD.
+        isbn = re.findall("href=\"//reader.izneo.com/read/(.+?)\?exiturl", html_one_line)
+        if len(isbn) > 0:
+            isbn = strip_tags(isbn[0]).strip()
+        else:
+            isbn = ""
 
-    # La série (si elle est spécifiée).
-    serie = re.findall("<h2 class=\"product-serie\" itemprop=\"isPartOf\">(.+?)</div>", html_one_line)
-    if len(serie) > 0:
-        serie = strip_tags(serie[0]).strip()
-        serie = " (" + re.sub("\s+", " ", serie) + ")"
-    else:
-        serie = ""
-    serie = html.unescape(serie)
+        # La série (si elle est spécifiée).
+        serie = re.findall("<h2 class=\"product-serie\" itemprop=\"isPartOf\">(.+?)</div>", html_one_line)
+        if len(serie) > 0:
+            serie = strip_tags(serie[0]).strip()
+            serie = " (" + re.sub("\s+", " ", serie) + ")"
+        else:
+            serie = ""
+        serie = html.unescape(serie)
 
-    # L'auteur (s'il est spécifié).
-    author = re.findall("<div class=\"author\" itemprop=\"author\">(.+?)</div>", html_one_line)
-    if len(author) > 0:
-        author = strip_tags(author[0]).strip()
-        author = " (" + re.sub("\s+", " ", author) + ")"
-    else:
-        author = ""
-    author = html.unescape(author)
+        # L'auteur (s'il est spécifié).
+        author = re.findall("<div class=\"author\" itemprop=\"author\">(.+?)</div>", html_one_line)
+        if len(author) > 0:
+            author = strip_tags(author[0]).strip()
+            author = " (" + re.sub("\s+", " ", author) + ")"
+        else:
+            author = ""
+        author = html.unescape(author)
 
-    # Le nombre de pages annoncé.
-    nb_pages = re.findall("Nb de pages</h1>(.+?)</div>", html_one_line)
-    if len(nb_pages) > 0:
-        nb_pages = int(strip_tags(nb_pages[0]).strip())
-    else:
-        nb_pages = 999
-    nb_digits = len(str(nb_pages + page_sup_to_grab))
+        # Le nombre de pages annoncé.
+        nb_pages = re.findall("Nb de pages</h1>(.+?)</div>", html_one_line)
+        if len(nb_pages) > 0:
+            nb_pages = int(strip_tags(nb_pages[0]).strip())
+        else:
+            nb_pages = 999
+        nb_digits = len(str(nb_pages + page_sup_to_grab))
 
-    # Si on n'a pas les informations de base, on arrête tout de suite.
-    if not title or not isbn: 
-        print("ERROR Impossible de trouver le livre")
-        exit()
-
-    # Création du répertoire de destination.
-    categories = url.replace(root_path, "").split("/")
-    mid_path = ""
-    for elem in categories[:-1]:
-        res = re.findall("(.+)-\d+", elem)
-        if len(res) > 0:
-            elem = res[0]
-        mid_path += elem
-        if not os.path.exists(output_folder + "/" + mid_path): os.mkdir(output_folder + "/" + mid_path)
-        mid_path += "/"
-
-    print("Téléchargement de \"" + clean_name(title + serie + author) + "\"")
-    save_path = output_folder + "/" + mid_path + clean_name(title + serie + author)
-    if not os.path.exists(save_path): os.mkdir(save_path)
-    print("Destination : " + save_path)
-
-    # On boucle sur toutes les pages de la BD.
-    for page in range(nb_pages + page_sup_to_grab):
-    #for page in range(3):
-        url = "https://reader.izneo.com/read/" + str(isbn) +  "/" + str(page) + "?quality=HD"
-        r = s.get(url, cookies=s.cookies, allow_redirects=True)
-        if r.status_code == 404:
-            if page < nb_pages:
-                print("[WARNING] On a récupéré " + str(page + 1) + " pages (au moins " + str(nb_pages) + " attendues)")
-            break
-        if re.findall("<!DOCTYPE html>", r.text):
-            print("[WARNING] Page " + str(page + 1) + " inaccessible")
+        # Si on n'a pas les informations de base, on arrête tout de suite.
+        if not title or not isbn: 
+            print("ERROR Impossible de trouver le livre")
             break
 
-        page_txt = ("000000000" + str(page))[-nb_digits:]
-        file = open(save_path + "/" + title + " - " + page_txt + ".jpg", "wb").write(r.content)
-        print(".", end="")
-    print("OK")
+        # Création du répertoire de destination.
+        categories = url.replace(root_path, "").split("/")
+        mid_path = ""
+        for elem in categories[:-1]:
+            res = re.findall("(.+)-\d+", elem)
+            if len(res) > 0:
+                elem = res[0]
+            mid_path += elem
+            if not os.path.exists(output_folder + "/" + mid_path): os.mkdir(output_folder + "/" + mid_path)
+            mid_path += "/"
 
-    # Si besoin, on crée une archive.
-    if output_format == "cbz" or output_format == "both":
-        print("Création du CBZ")
-        # Dans le cas où un fichier du même nom existe déjà, on change de nom.
-        filler_txt = ""
-        if os.path.exists(save_path + ".zip"):
-            filler_txt += "_"
-            max_attempts = 20
-            while os.path.exists(save_path + filler_txt + ".zip") and max_attempts > 0:
+        print("Téléchargement de \"" + clean_name(title + serie + author) + "\"")
+        save_path = output_folder + "/" + mid_path + clean_name(title + serie + author)
+        if not os.path.exists(save_path): os.mkdir(save_path)
+        print("Destination : " + save_path)
+
+        # On boucle sur toutes les pages de la BD.
+        for page in range(min(nb_pages + page_sup_to_grab, nb_page_limit)):
+        #for page in range(3):
+            url = "https://reader.izneo.com/read/" + str(isbn) +  "/" + str(page) + "?quality=HD"
+            r = s.get(url, cookies=s.cookies, allow_redirects=True)
+            if r.status_code == 404:
+                if page < nb_pages:
+                    print("[WARNING] On a récupéré " + str(page + 1) + " pages (au moins " + str(nb_pages) + " attendues)")
+                break
+            if re.findall("<!DOCTYPE html>", r.text):
+                print("[WARNING] Page " + str(page + 1) + " inaccessible")
+                break
+
+            page_txt = ("000000000" + str(page))[-nb_digits:]
+            file = open(save_path + "/" + title + " - " + page_txt + ".jpg", "wb").write(r.content)
+            print(".", end="")
+        print("OK")
+
+        # Si besoin, on crée une archive.
+        if output_format == "cbz" or output_format == "both":
+            print("Création du CBZ")
+            # Dans le cas où un fichier du même nom existe déjà, on change de nom.
+            filler_txt = ""
+            if os.path.exists(save_path + ".zip"):
                 filler_txt += "_"
-                max_attempts -= 1
-        shutil.make_archive(save_path + filler_txt, 'zip', save_path)
+                max_attempts = 20
+                while os.path.exists(save_path + filler_txt + ".zip") and max_attempts > 0:
+                    filler_txt += "_"
+                    max_attempts -= 1
+            shutil.make_archive(save_path + filler_txt, 'zip', save_path)
 
-        filler_txt2 = ""
-        if os.path.exists(save_path + ".cbz"):
-            filler_txt2 += "_"
-            max_attempts = 20
-            while os.path.exists(save_path + filler_txt2 + ".cbz") and max_attempts > 0:
+            filler_txt2 = ""
+            if os.path.exists(save_path + ".cbz"):
                 filler_txt2 += "_"
-                max_attempts -= 1
-        os.rename(save_path + filler_txt + ".zip", save_path + filler_txt2 + ".cbz")
+                max_attempts = 20
+                while os.path.exists(save_path + filler_txt2 + ".cbz") and max_attempts > 0:
+                    filler_txt2 += "_"
+                    max_attempts -= 1
+            os.rename(save_path + filler_txt + ".zip", save_path + filler_txt2 + ".cbz")
 
-    # Si besoin, on supprime le répertoire des JPG.
-    if output_format == "cbz":
-        shutil.rmtree(save_path)
+        # Si besoin, on supprime le répertoire des JPG.
+        if output_format == "cbz":
+            shutil.rmtree(save_path)
 
     print("Terminé !")
 
