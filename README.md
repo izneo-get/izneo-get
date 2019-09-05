@@ -20,8 +20,8 @@ python izneo_get.py https://www.izneo.com/fr/manga-et-simultrad/shonen/assassina
 Pour récupérer la BD dans une archive CBZ (fichier de config présent) :
 python izneo_get.py https://www.izneo.com/fr/manga-et-simultrad/shonen/assassination-classroom-4744/assassination-classroom-t1-19197 -f cbz
 
-Pour récupérer la BD dans un répertoire d'images, sans fichier de config présent : 
-python izneo_get.py https://www.izneo.com/fr/manga-et-simultrad/shonen/assassination-classroom-4744/assassination-classroom-t1-19197 -c abcdef12345678901234567890123456789012345678 -s abcdefghijkl123456789012345 -o /tmp/DOWNLOADS
+Pour récupérer une liste de BDs, dans un répertoire d'images, sans fichier de config présent : 
+python izneo_get.py /tmp/input.txt -c abcdef12345678901234567890123456789012345678 -s abcdefghijkl123456789012345 -o /tmp/DOWNLOADS
 
 CFDUID est la valeur de "cfduid" dans le cookie.
 SESSION_ID est la valeur de "c03aab1711dbd2a02ea11200dde3e3d1" dans le cookie.
