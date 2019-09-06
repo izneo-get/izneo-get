@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-__version__ = "0.02b"
+__version__ = "0.03"
 """
 Ce script permet de récupérer une BD présente sur https://www.izneo.com/fr/ dans la limite des capacités de notre compte existant.
 
@@ -23,6 +23,7 @@ import argparse
 import configparser
 import shutil
 import time
+from bs4 import BeautifulSoup
 
 def strip_tags(html):
     """Permet de supprimer tous les tags HTML d'une chaine de caractère.
@@ -63,7 +64,7 @@ if __name__ == "__main__":
     cfduid = ""
     session_id = ""
     page_sup_to_grab = 20
-    root_path = "https://www.izneo.com/fr/"
+    root_path = "https://www.izneo.com/"
 
     # Parse des arguments passés en ligne de commande.
     parser = argparse.ArgumentParser(
@@ -95,6 +96,9 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--pause", type=int, default=0, help="Pause (en secondes) à respecter après chaque téléchargement d'image"
+    )
+    parser.add_argument(
+        "--full-only", action="store_true", default=False, help="Ne prend que les liens de BD disponible dans l'abonnement"
     )
     args = parser.parse_args()
 
@@ -128,6 +132,7 @@ if __name__ == "__main__":
     nb_page_limit = args.limit
     from_page = args.from_page
     pause_sec = args.pause
+    full_only = args.full_only
 
     # Création d'une session et création du cookie.
     s = requests.Session()
@@ -157,6 +162,19 @@ if __name__ == "__main__":
         r = s.get(url, cookies=s.cookies, allow_redirects=True)
         html_one_line = r.text.replace("\n", "").replace("\r", "")
         
+        soup = BeautifulSoup(html_one_line, features="html.parser")
+
+        is_abo = False
+        div = soup.find("div", id="product_cover")
+        if div:
+            is_abo = div.find_all("div", class_="corner abo")
+            is_abo = True if is_abo else False
+        
+        if not is_abo:
+            print("Cette BD n'est pas disponible dans l'abonnement")
+        if full_only and not is_abo:
+            continue
+
         # Le titre.
         title = re.findall("<h1 class=\"product-title\" itemprop=\"name\">(.+?)</h1>", html_one_line)
         if title:
