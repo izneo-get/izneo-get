@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-__version__ = "0.02"
+__version__ = "0.02b"
 """
 Ce script permet de récupérer une BD présente sur https://www.izneo.com/fr/ dans la limite des capacités de notre compte existant.
 
@@ -55,7 +55,7 @@ def clean_name(name):
     chars = "\\/:*<>?\"|"
     for c in chars:
         name = name.replace(c, "_")
-    name = re.sub("\s+", " ", name)
+    name = re.sub(r"\s+", " ", name)
     return name
 
 
@@ -104,7 +104,7 @@ if __name__ == "__main__":
     if args.config:
         config_name = args.config
     else:
-        config_name = re.sub("\.py$", ".cfg", os.path.basename(sys.argv[0]))
+        config_name = re.sub(r"\.py$", ".cfg", os.path.basename(sys.argv[0]))
     config.read(config_name)
 
     def get_param_or_default(
@@ -129,7 +129,6 @@ if __name__ == "__main__":
     from_page = args.from_page
     pause_sec = args.pause
 
-
     # Création d'une session et création du cookie.
     s = requests.Session()
     cookie_obj = requests.cookies.create_cookie(domain='.izneo.com', name='__cfduid', value=cfduid)
@@ -142,9 +141,9 @@ if __name__ == "__main__":
     # Liste des URLs à récupérer.
     url_list = []
     if os.path.exists(url):
-        f = open(url, 'r')
-        lignes = f.readlines()
-        f.close()
+        with open(url, 'r') as f:
+            lignes = f.readlines()
+
         for ligne in lignes:
             if ligne[0] != '#':
                 ligne = ligne.strip()
@@ -159,11 +158,11 @@ if __name__ == "__main__":
         html_one_line = r.text.replace("\n", "").replace("\r", "")
         
         # Le titre.
-        title = re.findall("<meta property=\"og:title\" content=\"(.+?)\" />", html_one_line)
-        if len(title) > 0:
+        title = re.findall("<h1 class=\"product-title\" itemprop=\"name\">(.+?)</h1>", html_one_line)
+        if title:
             title = strip_tags(title[0]).strip()
         else:
-            title = re.findall("<h1 class=\"product-title\" itemprop=\"name\">(.+?)</h1>", html_one_line)
+            title = re.findall("<meta property=\"og:title\" content=\"(.+?)\" />", html_one_line)
             if len(title) > 0:
                 title = strip_tags(title[0]).strip()
             else:
@@ -172,26 +171,23 @@ if __name__ == "__main__":
         title = clean_name(title)
 
         # L'ISBN, qui servira d'identifiant de la BD.
-        isbn = re.findall("href=\"//reader.izneo.com/read/(.+?)\?exiturl", html_one_line)
-        if len(isbn) > 0:
-            isbn = strip_tags(isbn[0]).strip()
-        else:
-            isbn = ""
+        isbn = re.findall("href=\"//reader.izneo.com/read/(.+?)\\?exiturl", html_one_line)
+        isbn = strip_tags(isbn[0]).strip() if isbn else ""
 
         # La série (si elle est spécifiée).
         serie = re.findall("<h2 class=\"product-serie\" itemprop=\"isPartOf\">(.+?)</div>", html_one_line)
-        if len(serie) > 0:
+        if serie:
             serie = strip_tags(serie[0]).strip()
-            serie = " (" + re.sub("\s+", " ", serie) + ")"
+            serie = " (" + re.sub(r"\s+", " ", serie) + ")"
         else:
             serie = ""
         serie = html.unescape(serie)
 
         # L'auteur (s'il est spécifié).
         author = re.findall("<div class=\"author\" itemprop=\"author\">(.+?)</div>", html_one_line)
-        if len(author) > 0:
+        if author:
             author = strip_tags(author[0]).strip()
-            author = " (" + re.sub("\s+", " ", author) + ")"
+            author = " (" + re.sub(r"\s+", " ", author) + ")"
         else:
             author = ""
         author = html.unescape(author)
@@ -213,7 +209,7 @@ if __name__ == "__main__":
         categories = url.replace(root_path, "").split("/")
         mid_path = ""
         for elem in categories[:-1]:
-            res = re.findall("(.+)-\d+", elem)
+            res = re.findall(r"(.+)-\d+", elem)
             if len(res) > 0:
                 elem = res[0]
             mid_path += elem
@@ -221,7 +217,8 @@ if __name__ == "__main__":
             mid_path += "/"
 
         print("Téléchargement de \"" + clean_name(title + serie + author) + "\"")
-        print(str(nb_pages) + " pages attendues")
+        # print(str(nb_pages) + " pages attendues")
+        print("{nb_pages} pages attendues".format(nb_pages=nb_pages))
         save_path = output_folder + "/" + mid_path + clean_name(title + serie + author)
         if not os.path.exists(save_path): os.mkdir(save_path)
         print("Destination : " + save_path)
@@ -235,7 +232,8 @@ if __name__ == "__main__":
                 if page < nb_pages:
                     print("[WARNING] On a récupéré " + str(page + 1) + " pages (au moins " + str(nb_pages) + " attendues)")
                 break
-            if re.findall("<!DOCTYPE html>", r.text):
+            # if re.findall("<!DOCTYPE html>", r.text):
+            if "<!DOCTYPE html>" in r.text:
                 print("[WARNING] Page " + str(page_num) + " inaccessible")
                 break
 
