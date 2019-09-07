@@ -11,9 +11,10 @@ usage:
 ```
 python izneo_get.py [-h] [--session-id SESSION_ID] [--cfduid CFDUID]
                     [--output-folder OUTPUT_FOLDER]
-                    [--output-format {both,jpg,cbz}] [--config CONFIG]
+                    [--output-format {jpg,both,cbz}] [--config CONFIG]
                     [--from-page FROM_PAGE] [--limit LIMIT] [--pause PAUSE]
                     [--full-only] [--continue] [--user-agent USER_AGENT]
+                    [--webp WEBP]
                     url
 
 Script pour sauvegarder une BD Izneo.
@@ -30,7 +31,7 @@ optional arguments:
                         L'identifiant cfduid
   --output-folder OUTPUT_FOLDER, -o OUTPUT_FOLDER
                         Répertoire racine de téléchargement
-  --output-format {both,jpg,cbz}, -f {both,jpg,cbz}
+  --output-format {jpg,both,cbz}, -f {jpg,both,cbz}
                         Répertoire racine de téléchargement
   --config CONFIG       Fichier de configuration
   --from-page FROM_PAGE
@@ -43,6 +44,8 @@ optional arguments:
   --continue            Pour reprendre là où on en était
   --user-agent USER_AGENT
                         User agent à utiliser
+  --webp WEBP           Conversion en webp avec une certaine qualité (exemple
+                        : --webp 75)
 ```
 
 Exemple :  
@@ -57,6 +60,10 @@ Pour récupérer la BD dans une archive CBZ (fichier de config présent) :
 python izneo_get.py https://www.izneo.com/fr/manga-et-simultrad/shonen/assassination-classroom-4744/assassination-classroom-t1-19197 -f cbz
 ```
 
+Pour récupérer la BD dans une archive CBZ avec des images converties en WEBP (fichier de config présent) :  
+```
+python izneo_get.py https://www.izneo.com/fr/manga-et-simultrad/shonen/assassination-classroom-4744/assassination-classroom-t1-19197 -f cbz --webp 70
+```
 
 Pour récupérer une liste de BDs, dans un répertoire d'images, sans fichier de config présent :  
 ```
