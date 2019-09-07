@@ -103,6 +103,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "--continue", action="store_true", dest="continue_from_existing", default=False, help="Pour reprendre là où on en était"
     )
+    parser.add_argument(
+        "--user-agent", type=str, default=None, help="User agent à utiliser"
+    )
     args = parser.parse_args()
 
  
@@ -128,6 +131,7 @@ if __name__ == "__main__":
 
     cfduid = get_param_or_default(config, "cfduid", "", args.cfduid)
     session_id = get_param_or_default(config, "session_id", "", args.session_id)
+    user_agent = get_param_or_default(config, "user_agent", "", args.user_agent)
     output_folder = get_param_or_default(config, "output_folder", os.path.dirname(os.path.abspath(sys.argv[0])) + "/DOWNLOADS", args.output_folder)
     if not os.path.exists(output_folder): os.mkdir(output_folder)
     url = args.url
@@ -249,12 +253,12 @@ if __name__ == "__main__":
 
 
         headers = {
-            # 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:68.0) Gecko/20100101 Firefox/68.0',
             # 'Accept': 'image/webp,*/*',
-            # 'Proxy-Authorization': 'Basic VWhnRUtkQm1NZUVzWDVtRlR3VlprZE51Okg1VGtFZEVZWXlWdjl5Y3BkZndaaENkOA==',
             'Connection': 'keep-alive',
             'Referer': 'https://reader.izneo.com/read/' + isbn + '?exiturl=' + url,
         }
+        if user_agent:
+            headers['User-Agent'] = user_agent
 
         params = (
             ('quality', 'HD'),
@@ -276,7 +280,7 @@ if __name__ == "__main__":
             r = s.get(url, cookies=s.cookies, allow_redirects=True, params=params, headers=headers)
             if r.status_code == 404:
                 if page < nb_pages:
-                    print("[WARNING] On a récupéré " + str(page + 1) + " pages (au moins " + str(nb_pages) + " attendues)")
+                    print("[WARNING] On a récupéré " + str(page + 1) + " pages (" + str(nb_pages) + " annoncées par l'éditeur)")
                 break
             # if re.findall("<!DOCTYPE html>", r.text):
             # if "<!DOCTYPE html>" in r.text:
