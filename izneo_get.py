@@ -120,7 +120,7 @@ def requests_retry_session(
 if __name__ == "__main__":
     cfduid = ""
     session_id = ""
-    page_sup_to_grab = 500
+    page_sup_to_grab = 20
     root_path = "https://www.izneo.com/"
 
     # Parse des arguments passés en ligne de commande.
@@ -289,6 +289,7 @@ if __name__ == "__main__":
         else:
             nb_pages = 999
         nb_digits = len(str(nb_pages + page_sup_to_grab))
+        page_sup_to_grab = 999
 
         # Si on n'a pas les informations de base, on arrête tout de suite.
         if not title or not isbn: 
