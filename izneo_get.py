@@ -3,12 +3,40 @@ __version__ = "0.04"
 """
 Ce script permet de récupérer une BD présente sur https://www.izneo.com/fr/ dans la limite des capacités de notre compte existant.
 
-Utilisation : python izneo_get.py [-h] 
-                [--cfduid CFDUID]
-                [--session-id SESSION_ID] 
-                [--output-folder OUTPUT_FOLDER]
-                [--output-format {cbz,both,jpg}] [--config CONFIG]
-                url
+usage: python izneo_get.py [-h] [--session-id SESSION_ID] [--cfduid CFDUID]
+                    [--output-folder OUTPUT_FOLDER]
+                    [--output-format {both,jpg,cbz}] [--config CONFIG]
+                    [--from-page FROM_PAGE] [--limit LIMIT] [--pause PAUSE]
+                    [--full-only] [--continue] [--user-agent USER_AGENT]
+                    url
+
+Script pour sauvegarder une BD Izneo.
+
+positional arguments:
+  url                   L'URL de la BD à récupérer ou le chemin vers un
+                        fichier local contenant une liste d'URLs
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --session-id SESSION_ID, -s SESSION_ID
+                        L'identifiant de session
+  --cfduid CFDUID, -c CFDUID
+                        L'identifiant cfduid
+  --output-folder OUTPUT_FOLDER, -o OUTPUT_FOLDER
+                        Répertoire racine de téléchargement
+  --output-format {both,jpg,cbz}, -f {both,jpg,cbz}
+                        Répertoire racine de téléchargement
+  --config CONFIG       Fichier de configuration
+  --from-page FROM_PAGE
+                        Première page à récupérer (défaut : 0)
+  --limit LIMIT         Nombre de pages à récupérer au maximum (défaut : 1000)
+  --pause PAUSE         Pause (en secondes) à respecter après chaque
+                        téléchargement d'image
+  --full-only           Ne prend que les liens de BD disponible dans
+                        l'abonnement
+  --continue            Pour reprendre là où on en était
+  --user-agent USER_AGENT
+                        User agent à utiliser
 
 CFDUID est la valeur de "cfduid" dans le cookie.
 SESSION_ID est la valeur de "c03aab1711dbd2a02ea11200dde3e3d1" dans le cookie.
@@ -263,6 +291,8 @@ if __name__ == "__main__":
         params = (
             ('quality', 'HD'),
         )
+
+        progress_bar = ""
         # On boucle sur toutes les pages de la BD.
         for page in range(min(nb_pages + page_sup_to_grab, nb_page_limit)):
             page_num = page + from_page
@@ -273,7 +303,10 @@ if __name__ == "__main__":
             url = "https://reader.izneo.com/read/" + str(isbn) +  "/" + str(page_num) + "?quality=HD"
             # Si la page existe déjà sur le disque, on passe.
             if continue_from_existing and os.path.exists(store_path):
-                print("x", end="")
+                progress_bar += "x"
+                progress_message = "\r" + "[page " + str(page_num) + " / ~" + str(nb_pages) + "] " + progress_bar + " "
+                # print("x", end="")
+                print(progress_message, end="")
                 sys.stdout.flush()
                 continue
 
@@ -288,7 +321,10 @@ if __name__ == "__main__":
                 print("[WARNING] Page " + str(page_num) + " inaccessible")
                 break
             file = open(store_path, "wb").write(r.content)
-            print(".", end="")
+            progress_bar += "."
+            progress_message = "\r" + "[page " + str(page_num) + " / ~" + str(nb_pages) + "] " + progress_bar + " "
+            # print(".", end="")
+            print(progress_message, end="")
             sys.stdout.flush()
             time.sleep(pause_sec)
         print("OK")
