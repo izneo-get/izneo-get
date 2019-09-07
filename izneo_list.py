@@ -1,7 +1,28 @@
 # -*- coding: utf-8 -*-
 __version__ = "0.01"
 """
+usage: izneo_list.py [-h] [--session-id SESSION_ID] [--cfduid CFDUID]
+                     [--config CONFIG] [--pause PAUSE] [--full-only]
+                     [--series]
+                     search
 
+Script pour obtenir une liste de BDs Izneo.
+
+positional arguments:
+  search                La page de série qui contient une liste de BDs
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --session-id SESSION_ID, -s SESSION_ID
+                        L'identifiant de session
+  --cfduid CFDUID, -c CFDUID
+                        L'identifiant cfduid
+  --config CONFIG       Fichier de configuration
+  --pause PAUSE         Pause (en secondes) à respecter après chaque appel de
+                        page
+  --full-only           Ne prend que les liens de BD disponible dans
+                        l'abonnement
+  --series              La recherche ne se fait que sur les séries
 """
 import requests
 import re
@@ -48,6 +69,27 @@ def clean_name(name):
     name = re.sub(r"\s+", " ", name)
     return name
 
+def parse_html(html):
+    new_results = 0
+    soup = BeautifulSoup(html, features="html.parser")
+    for div in soup.find_all("div", class_="product-list-item"):
+        is_abo = div.find_all("div", class_="corner abo")
+        is_abo = True if is_abo else False
+        link = div.find_all("a", class_="view-details")
+        link = root_path + link[0].get("href") if link else ""
+        title = div.find_all("div", class_="product-title")
+        title = title[0].text if title else ""
+        title = strip_tags(title)
+        if not is_abo:
+            title += " (*)"
+        title = re.sub(r"\s+", " ", title).strip()
+        if title and link and ((not full_only) or (full_only and is_abo)):
+            print("# " + title)
+            print(link)
+        if title and link:
+            new_results += 1
+    return new_results
+
 
 if __name__ == "__main__":
     cfduid = ""
@@ -77,6 +119,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "--full-only", action="store_true", default=False, help="Ne prend que les liens de BD disponible dans l'abonnement"
     )
+    parser.add_argument(
+        "--series", action="store_true", default=False, help="La recherche ne se fait que sur les séries"
+    )
     args = parser.parse_args()
 
  
@@ -105,6 +150,7 @@ if __name__ == "__main__":
     search = args.search
     pause_sec = args.pause
     full_only = args.full_only
+    series = args.series
 
     # Création d'une session et création du cookie.
     s = requests.Session()
@@ -129,48 +175,24 @@ if __name__ == "__main__":
             r = s.post(url, allow_redirects=True, data=data)
 
             html_one_line = r.text.replace("\n", "").replace("\r", "")
-            soup = BeautifulSoup(html_one_line, features="html.parser")
-            for div in soup.find_all("div", class_="product-list-item"):
-                is_abo = div.find_all("div", class_="corner abo")
-                is_abo = True if is_abo else False
-                link = div.find_all("a", class_="view-details")
-                link = root_path + link[0].get("href") if link else ""
-                title = div.find_all("div", class_="product-title")
-                title = title[0].text if title else ""
-                title = strip_tags(title)
-                if not is_abo:
-                    title += " (*)"
-                title = re.sub(r"\s+", " ", title).strip()
-                if title and link and ((not full_only) or (full_only and is_abo)):
-                    print("# " + title)
-                    print(link)
-                if title and link:
-                    new_results += 1
+            new_results += parse_html(html_one_line)
             step += 1
 
     else:
         url = "https://www.izneo.com/fr/search-album-list"
-    
-    # TODO
-    url = search
-    # url = "https://www.izneo.com/fr/search-album-list"
-    # data = {
-    #     'limit_start':'0',
-    #     'limit_end':'20',
-    #     'text':'largo'
-    # }
-    # r = s.post(url, allow_redirects=True, data=data)
-    # html_one_line = r.text.replace("\n", "").replace("\r", "")
-    
-    # Le titre.
-    # title = re.findall("<meta property=\"og:title\" content=\"(.+?)\" />", html_one_line)
-    # if len(title) > 0:
-    #     title = strip_tags(title[0]).strip()
-    # else:
-    #     title = re.findall("<h1 class=\"product-title\" itemprop=\"name\">(.+?)</h1>", html_one_line)
-    #     if len(title) > 0:
-    #         title = strip_tags(title[0]).strip()
-    #     else:
-    #         title = ""
-    # title = html.unescape(title)
-    # title = clean_name(title)
+        if series:
+            url = "https://www.izneo.com/fr/search-series-list"
+        step = 0
+        new_results = 0
+        while step == 0 or new_results > 0:
+            new_results = 0
+            data = {
+                'limit_start':step * 25,
+                'limit_end':'25',
+                'text':search,
+            }
+            r = s.post(url, allow_redirects=True, data=data)
+
+            html_one_line = r.text.replace("\n", "").replace("\r", "")
+            new_results += parse_html(html_one_line)
+            step += 1
