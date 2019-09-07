@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-__version__ = "0.03"
+__version__ = "0.04"
 """
 Ce script permet de récupérer une BD présente sur https://www.izneo.com/fr/ dans la limite des capacités de notre compte existant.
 
@@ -100,6 +100,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "--full-only", action="store_true", default=False, help="Ne prend que les liens de BD disponible dans l'abonnement"
     )
+    parser.add_argument(
+        "--continue", action="store_true", dest="continue_from_existing", default=False, help="Pour reprendre là où on en était"
+    )
     args = parser.parse_args()
 
  
@@ -133,6 +136,7 @@ if __name__ == "__main__":
     from_page = args.from_page
     pause_sec = args.pause
     full_only = args.full_only
+    continue_from_existing = args.continue_from_existing
 
     # Création d'une session et création du cookie.
     s = requests.Session()
@@ -147,14 +151,16 @@ if __name__ == "__main__":
     url_list = []
     if os.path.exists(url):
         with open(url, 'r') as f:
-            lignes = f.readlines()
+            lines = f.readlines()
 
-        for ligne in lignes:
-            if ligne[0] != '#':
-                ligne = ligne.strip()
-                url_list.append(ligne)
+        for line in lines:
+            line = line.strip()
+            if line and line[0] != '#':
+                url_list.append(line)
     else:
         url_list.append(url)
+
+
 
     for url in url_list:
         print("URL: " + url)
@@ -241,22 +247,43 @@ if __name__ == "__main__":
         if not os.path.exists(save_path): os.mkdir(save_path)
         print("Destination : " + save_path)
 
+
+        headers = {
+            # 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:68.0) Gecko/20100101 Firefox/68.0',
+            # 'Accept': 'image/webp,*/*',
+            # 'Proxy-Authorization': 'Basic VWhnRUtkQm1NZUVzWDVtRlR3VlprZE51Okg1VGtFZEVZWXlWdjl5Y3BkZndaaENkOA==',
+            'Connection': 'keep-alive',
+            'Referer': 'https://reader.izneo.com/read/' + isbn + '?exiturl=' + url,
+        }
+
+        params = (
+            ('quality', 'HD'),
+        )
         # On boucle sur toutes les pages de la BD.
         for page in range(min(nb_pages + page_sup_to_grab, nb_page_limit)):
             page_num = page + from_page
+
+            page_txt = ("000000000" + str(page_num))[-nb_digits:]
+            store_path = save_path + "/" + title + " - " + page_txt + ".jpg"
+
             url = "https://reader.izneo.com/read/" + str(isbn) +  "/" + str(page_num) + "?quality=HD"
-            r = s.get(url, cookies=s.cookies, allow_redirects=True)
+            # Si la page existe déjà sur le disque, on passe.
+            if continue_from_existing and os.path.exists(store_path):
+                print("x", end="")
+                sys.stdout.flush()
+                continue
+
+            r = s.get(url, cookies=s.cookies, allow_redirects=True, params=params, headers=headers)
             if r.status_code == 404:
                 if page < nb_pages:
                     print("[WARNING] On a récupéré " + str(page + 1) + " pages (au moins " + str(nb_pages) + " attendues)")
                 break
             # if re.findall("<!DOCTYPE html>", r.text):
-            if "<!DOCTYPE html>" in r.text:
+            # if "<!DOCTYPE html>" in r.text:
+            if r.encoding:
                 print("[WARNING] Page " + str(page_num) + " inaccessible")
                 break
-
-            page_txt = ("000000000" + str(page_num))[-nb_digits:]
-            file = open(save_path + "/" + title + " - " + page_txt + ".jpg", "wb").write(r.content)
+            file = open(store_path, "wb").write(r.content)
             print(".", end="")
             sys.stdout.flush()
             time.sleep(pause_sec)
