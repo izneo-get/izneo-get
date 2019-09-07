@@ -166,6 +166,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "--webp", type=int, default=None, help="Conversion en webp avec une certaine qualité (exemple : --webp 75)"
     )
+    parser.add_argument(
+        "--no-tree", action="store_true", default=False, help="Pour ne pas créer l'arborescence dans le répertoire de téléchargement"
+    )
     args = parser.parse_args()
 
  
@@ -202,6 +205,7 @@ if __name__ == "__main__":
     full_only = args.full_only
     continue_from_existing = args.continue_from_existing
     webp = args.webp
+    no_tree = args.no_tree
 
     # Création d'une session et création du cookie.
     s = requests.Session()
@@ -299,13 +303,14 @@ if __name__ == "__main__":
         # Création du répertoire de destination.
         categories = url.replace(root_path, "").split("/")
         mid_path = ""
-        for elem in categories[:-1]:
-            res = re.findall(r"(.+)-\d+", elem)
-            if len(res) > 0:
-                elem = res[0]
-            mid_path += elem
-            if not os.path.exists(output_folder + "/" + mid_path): os.mkdir(output_folder + "/" + mid_path)
-            mid_path += "/"
+        if not no_tree:
+            for elem in categories[:-1]:
+                res = re.findall(r"(.+)-\d+", elem)
+                if len(res) > 0:
+                    elem = res[0]
+                mid_path += elem
+                if not os.path.exists(output_folder + "/" + mid_path): os.mkdir(output_folder + "/" + mid_path)
+                mid_path += "/"
 
         print("Téléchargement de \"" + clean_name(title + serie + author) + "\"")
         print("{nb_pages} pages attendues".format(nb_pages=nb_pages))
