@@ -120,7 +120,7 @@ def requests_retry_session(
 if __name__ == "__main__":
     cfduid = ""
     session_id = ""
-    page_sup_to_grab = 20
+    page_sup_to_grab = 500
     root_path = "https://www.izneo.com/"
 
     # Parse des arguments passés en ligne de commande.
