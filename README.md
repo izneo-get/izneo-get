@@ -83,10 +83,11 @@ et recherchez le cookie "https://www.izneo.com".
 Ces valeurs peuvent être stockées dans le fichier de configuration "izneo_get.cfg".  
 
 
-### izneo_get
+### izneo_list
 ```
 usage: izneo_list.py [-h] [--session-id SESSION_ID] [--cfduid CFDUID]
                      [--config CONFIG] [--pause PAUSE] [--full-only]
+                     [--series]
                      search
 
 Script pour obtenir une liste de BDs Izneo.
@@ -105,6 +106,7 @@ optional arguments:
                         page
   --full-only           Ne prend que les liens de BD disponible dans
                         l'abonnement
+  --series              La recherche ne se fait que sur les séries
 ```
 
 Exemple :  
@@ -118,6 +120,15 @@ Pour récupérer la liste des liens d'une série, dans la limite des albums comp
 python izneo_list.py https://www.izneo.com/fr/manga-et-simultrad/shonen/naruto-567 --full-only
 ```
 
+Pour récupérer la liste des liens d'albums qui correspondent à la rechercher "largo" (fichier de config présent) :  
+```
+python izneo_list.py "largo"
+```
+
+Pour récupérer la liste des liens de séries qui correspondent à la rechercher "largo" (fichier de config présent) :  
+```
+python izneo_list.py "largo" --series
+```
 
 
 ## Prérequis
