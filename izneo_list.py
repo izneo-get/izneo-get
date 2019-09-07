@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 __version__ = "0.01"
 """
+Source : https://github.com/izneo-get/izneo-get
+
+Ce script permet de récupérer une liste d'URLS sur https://www.izneo.com/fr/ en fonction d'une recherche ou d'une page de série.
+
 usage: izneo_list.py [-h] [--session-id SESSION_ID] [--cfduid CFDUID]
                      [--config CONFIG] [--pause PAUSE] [--full-only]
                      [--series]
@@ -25,6 +29,8 @@ optional arguments:
   --series              La recherche ne se fait que sur les séries
 """
 import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util import Retry
 import re
 import os
 import sys 
@@ -69,6 +75,28 @@ def clean_name(name):
     name = re.sub(r"\s+", " ", name)
     return name
 
+def requests_retry_session(
+    retries=3,
+    backoff_factor=1,
+    status_forcelist=(500, 502, 504),
+    session=None,
+):
+    """Permet de gérer les cas simples de problèmes de connexions.
+    """
+    session = session or requests.Session()
+    retry = Retry(
+        total=retries,
+        read=retries,
+        connect=retries,
+        backoff_factor=backoff_factor,
+        status_forcelist=status_forcelist,
+    )
+    adapter = HTTPAdapter(max_retries=retry)
+    session.mount('http://', adapter)
+    session.mount('https://', adapter)
+    return session
+
+
 def parse_html(html):
     new_results = 0
     soup = BeautifulSoup(html, features="html.parser")
@@ -89,6 +117,7 @@ def parse_html(html):
         if title and link:
             new_results += 1
     return new_results
+
 
 
 if __name__ == "__main__":
@@ -172,10 +201,12 @@ if __name__ == "__main__":
             data = {
                 'limit_album_start':step * 16,
             }
-            r = s.post(url, allow_redirects=True, data=data)
+            # r = s.post(url, allow_redirects=True, data=data)
+            r = requests_retry_session(session=s).post(url, allow_redirects=True, data=data)
 
             html_one_line = r.text.replace("\n", "").replace("\r", "")
             new_results += parse_html(html_one_line)
+            time.sleep(pause_sec)
             step += 1
 
     else:
@@ -191,8 +222,10 @@ if __name__ == "__main__":
                 'limit_end':'25',
                 'text':search,
             }
-            r = s.post(url, allow_redirects=True, data=data)
+            # r = s.post(url, allow_redirects=True, data=data)
+            r = requests_retry_session(session=s).post(url, allow_redirects=True, data=data)
 
             html_one_line = r.text.replace("\n", "").replace("\r", "")
             new_results += parse_html(html_one_line)
+            time.sleep(pause_sec)
             step += 1
