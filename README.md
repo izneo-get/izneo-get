@@ -11,10 +11,11 @@ Il est évident que les BD ne doivent en aucun cas être conservées une fois la
 ```
 python izneo_get.py [-h] [--session-id SESSION_ID] [--cfduid CFDUID]
                     [--output-folder OUTPUT_FOLDER]
-                    [--output-format {cbz,both,jpg}] [--config CONFIG]
+                    [--output-format {jpg,both,cbz}] [--config CONFIG]
                     [--from-page FROM_PAGE] [--limit LIMIT] [--pause PAUSE]
                     [--full-only] [--continue] [--user-agent USER_AGENT]
                     [--webp WEBP] [--no-tree] [--force-title FORCE_TITLE]
+                    [--encoding ENCODING]
                     url
 
 Script pour sauvegarder une BD Izneo.
@@ -31,7 +32,7 @@ optional arguments:
                         L'identifiant cfduid
   --output-folder OUTPUT_FOLDER, -o OUTPUT_FOLDER
                         Répertoire racine de téléchargement
-  --output-format {cbz,both,jpg}, -f {cbz,both,jpg}
+  --output-format {jpg,both,cbz}, -f {jpg,both,cbz}
                         Répertoire racine de téléchargement
   --config CONFIG       Fichier de configuration
   --from-page FROM_PAGE
@@ -51,6 +52,7 @@ optional arguments:
   --force-title FORCE_TITLE
                         Le titre à utiliser dans les noms de fichier, à la
                         place de celui trouvé sur la page
+  --encoding ENCODING   L'encoding du fichier d'entrée de liste d'URLs (ex : "utf-8")
 ```
 
 Exemple :  

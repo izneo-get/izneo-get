@@ -7,10 +7,11 @@ Ce script permet de récupérer une BD présente sur https://www.izneo.com/fr/ d
 
 usage: izneo_get.py [-h] [--session-id SESSION_ID] [--cfduid CFDUID]
                     [--output-folder OUTPUT_FOLDER]
-                    [--output-format {cbz,both,jpg}] [--config CONFIG]
+                    [--output-format {jpg,both,cbz}] [--config CONFIG]
                     [--from-page FROM_PAGE] [--limit LIMIT] [--pause PAUSE]
                     [--full-only] [--continue] [--user-agent USER_AGENT]
                     [--webp WEBP] [--no-tree] [--force-title FORCE_TITLE]
+                    [--encoding ENCODING]
                     url
 
 Script pour sauvegarder une BD Izneo.
@@ -27,7 +28,7 @@ optional arguments:
                         L'identifiant cfduid
   --output-folder OUTPUT_FOLDER, -o OUTPUT_FOLDER
                         Répertoire racine de téléchargement
-  --output-format {cbz,both,jpg}, -f {cbz,both,jpg}
+  --output-format {jpg,both,cbz}, -f {jpg,both,cbz}
                         Répertoire racine de téléchargement
   --config CONFIG       Fichier de configuration
   --from-page FROM_PAGE
@@ -47,6 +48,7 @@ optional arguments:
   --force-title FORCE_TITLE
                         Le titre à utiliser dans les noms de fichier, à la
                         place de celui trouvé sur la page
+  --encoding ENCODING   L'encoding du fichier d'entrée de liste d'URLs (ex : "utf-8")
 
 CFDUID est la valeur de "cfduid" dans le cookie.
 SESSION_ID est la valeur de "c03aab1711dbd2a02ea11200dde3e3d1" dans le cookie.
@@ -127,7 +129,6 @@ def requests_retry_session(
 if __name__ == "__main__":
     cfduid = ""
     session_id = ""
-    page_sup_to_grab = 20
     root_path = "https://www.izneo.com/"
 
     # Parse des arguments passés en ligne de commande.
@@ -179,6 +180,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "--force-title", type=str, default=None, help="Le titre à utiliser dans les noms de fichier, à la place de celui trouvé sur la page"
     )
+    parser.add_argument(
+        "--encoding", type=str, default=None, help="L'encoding du fichier d'entrée de liste d'URLs (ex : \"utf-8\")"
+    )
     args = parser.parse_args()
 
  
@@ -217,6 +221,7 @@ if __name__ == "__main__":
     webp = args.webp
     no_tree = args.no_tree
     force_title = args.force_title
+    encoding = args.encoding
 
     # Création d'une session et création du cookie.
     s = requests.Session()
@@ -230,9 +235,12 @@ if __name__ == "__main__":
     # Liste des URLs à récupérer.
     url_list = []
     if os.path.exists(url):
-        with open(url, 'r') as f:
-            lines = f.readlines()
-
+        if encoding:
+            with open(url, 'r', encoding=encoding) as f:
+                lines = f.readlines()
+        else:
+            with open(url, 'r') as f:
+                lines = f.readlines()
         next_forced_title = ""
         for line in lines:
             line = line.strip()
@@ -255,6 +263,7 @@ if __name__ == "__main__":
         force_title = url[1]
         url = url[0]
         print("URL: " + url)
+        page_sup_to_grab = 20
         # On récupère les informations de la BD à récupérer.
         # r = s.get(url, cookies=s.cookies, allow_redirects=True)
         r = requests_retry_session(session=s).get(url, cookies=s.cookies, allow_redirects=True)
