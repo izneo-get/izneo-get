@@ -7,14 +7,14 @@ Il est évident que les BD ne doivent en aucun cas être conservées une fois la
 
 ## Utilisation
 ### izneo_get
-usage: 
+**Utilisation**  
 ```
 python izneo_get.py [-h] [--session-id SESSION_ID] [--cfduid CFDUID]
                     [--output-folder OUTPUT_FOLDER]
-                    [--output-format {jpg,both,cbz}] [--config CONFIG]
+                    [--output-format {cbz,both,jpg}] [--config CONFIG]
                     [--from-page FROM_PAGE] [--limit LIMIT] [--pause PAUSE]
                     [--full-only] [--continue] [--user-agent USER_AGENT]
-                    [--webp WEBP]
+                    [--webp WEBP] [--no-tree] [--force-title FORCE_TITLE]
                     url
 
 Script pour sauvegarder une BD Izneo.
@@ -31,7 +31,7 @@ optional arguments:
                         L'identifiant cfduid
   --output-folder OUTPUT_FOLDER, -o OUTPUT_FOLDER
                         Répertoire racine de téléchargement
-  --output-format {jpg,both,cbz}, -f {jpg,both,cbz}
+  --output-format {cbz,both,jpg}, -f {cbz,both,jpg}
                         Répertoire racine de téléchargement
   --config CONFIG       Fichier de configuration
   --from-page FROM_PAGE
@@ -46,6 +46,11 @@ optional arguments:
                         User agent à utiliser
   --webp WEBP           Conversion en webp avec une certaine qualité (exemple
                         : --webp 75)
+  --no-tree             Pour ne pas créer l'arborescence dans le répertoire de
+                        téléchargement
+  --force-title FORCE_TITLE
+                        Le titre à utiliser dans les noms de fichier, à la
+                        place de celui trouvé sur la page
 ```
 
 Exemple :  
@@ -55,9 +60,9 @@ python izneo_get.py https://www.izneo.com/fr/manga-et-simultrad/shonen/assassina
 ```
 
 
-Pour récupérer la BD dans une archive CBZ (fichier de config présent) :  
+Pour récupérer la BD dans une archive CBZ en forçant le titre (fichier de config présent) :  
 ```
-python izneo_get.py https://www.izneo.com/fr/manga-et-simultrad/shonen/assassination-classroom-4744/assassination-classroom-t1-19197 -f cbz
+python izneo_get.py https://www.izneo.com/fr/manga-et-simultrad/shonen/assassination-classroom-4744/assassination-classroom-t1-19197 -f cbz --force-title "[Yusei Matsui] Assassination Classroom - Tome 1"
 ```
 
 Pour récupérer la BD dans une archive CBZ avec des images converties en WEBP (fichier de config présent) :  
@@ -65,9 +70,9 @@ Pour récupérer la BD dans une archive CBZ avec des images converties en WEBP (
 python izneo_get.py https://www.izneo.com/fr/manga-et-simultrad/shonen/assassination-classroom-4744/assassination-classroom-t1-19197 -f cbz --webp 70
 ```
 
-Pour récupérer une liste de BDs, dans un répertoire d'images, sans fichier de config présent :  
+Pour récupérer une liste de BDs, dans un répertoire d'images sans sous-dossier, sans fichier de config présent :  
 ```
-python izneo_get.py /tmp/input.txt -c abcdef12345678901234567890123456789012345678 -s abcdefghijkl123456789012345 -o /tmp/DOWNLOADS
+python izneo_get.py /tmp/input.txt -c abcdef12345678901234567890123456789012345678 -s abcdefghijkl123456789012345 -o /tmp/DOWNLOADS --no-tree
 ```
 
 
@@ -91,10 +96,11 @@ Ces valeurs peuvent être stockées dans le fichier de configuration "izneo_get.
 
 
 ### izneo_list
+**Utilisation**  
 ```
-usage: izneo_list.py [-h] [--session-id SESSION_ID] [--cfduid CFDUID]
+python izneo_list.py [-h] [--session-id SESSION_ID] [--cfduid CFDUID]
                      [--config CONFIG] [--pause PAUSE] [--full-only]
-                     [--series]
+                     [--series] [--force-title]
                      search
 
 Script pour obtenir une liste de BDs Izneo.
@@ -114,6 +120,7 @@ optional arguments:
   --full-only           Ne prend que les liens de BD disponible dans
                         l'abonnement
   --series              La recherche ne se fait que sur les séries
+  --force-title         Ajoute l'élément "--force-tilte" dans la sortie
 ```
 
 Exemple :  
@@ -122,9 +129,9 @@ Pour récupérer la liste des liens d'une série (fichier de config présent) :
 python izneo_list.py https://www.izneo.com/fr/manga-et-simultrad/shonen/naruto-567
 ```
 
-Pour récupérer la liste des liens d'une série, dans la limite des albums complets inclus dans l'abonnement (fichier de config présent) :  
+Pour récupérer la liste des liens d'une série, dans la limite des albums complets inclus dans l'abonnement en ajoutant le tag "--force-title" (fichier de config présent) :  
 ```
-python izneo_list.py https://www.izneo.com/fr/manga-et-simultrad/shonen/naruto-567 --full-only
+python izneo_list.py https://www.izneo.com/fr/manga-et-simultrad/shonen/naruto-567 --full-only --force-title
 ```
 
 Pour récupérer la liste des liens d'albums qui correspondent à la rechercher "largo" (fichier de config présent) :  
