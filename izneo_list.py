@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-__version__ = "0.01"
+__version__ = "0.02"
 """
 Source : https://github.com/izneo-get/izneo-get
 
@@ -7,7 +7,7 @@ Ce script permet de récupérer une liste d'URLS sur https://www.izneo.com/fr/ e
 
 usage: izneo_list.py [-h] [--session-id SESSION_ID] [--cfduid CFDUID]
                      [--config CONFIG] [--pause PAUSE] [--full-only]
-                     [--series]
+                     [--series] [--force-title]
                      search
 
 Script pour obtenir une liste de BDs Izneo.
@@ -27,6 +27,7 @@ optional arguments:
   --full-only           Ne prend que les liens de BD disponible dans
                         l'abonnement
   --series              La recherche ne se fait que sur les séries
+  --force-title         Ajoute l'élément "--force-tilte" dans la sortie
 """
 import requests
 from requests.adapters import HTTPAdapter
@@ -97,7 +98,7 @@ def requests_retry_session(
     return session
 
 
-def parse_html(html):
+def parse_html(html, force_title=False):
     new_results = 0
     soup = BeautifulSoup(html, features="html.parser")
     for div in soup.find_all("div", class_="product-list-item"):
@@ -110,6 +111,8 @@ def parse_html(html):
         title = strip_tags(title)
         if not is_abo:
             title += " (*)"
+        if title and force_title:
+            title += " --force-title " + title
         title = re.sub(r"\s+", " ", title).strip()
         if title and link and ((not full_only) or (full_only and is_abo)):
             print("# " + title)
@@ -151,6 +154,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "--series", action="store_true", default=False, help="La recherche ne se fait que sur les séries"
     )
+    parser.add_argument(
+        "--force-title", action="store_true", default=False, help="Ajoute l'élément \"--force-tilte\" dans la sortie"
+    )
     args = parser.parse_args()
 
  
@@ -180,6 +186,7 @@ if __name__ == "__main__":
     pause_sec = args.pause
     full_only = args.full_only
     series = args.series
+    force_title = args.force_title
 
     # Création d'une session et création du cookie.
     s = requests.Session()
@@ -205,7 +212,7 @@ if __name__ == "__main__":
             r = requests_retry_session(session=s).post(url, allow_redirects=True, data=data)
 
             html_one_line = r.text.replace("\n", "").replace("\r", "")
-            new_results += parse_html(html_one_line)
+            new_results += parse_html(html_one_line, force_title=force_title)
             time.sleep(pause_sec)
             step += 1
 
@@ -226,6 +233,6 @@ if __name__ == "__main__":
             r = requests_retry_session(session=s).post(url, allow_redirects=True, data=data)
 
             html_one_line = r.text.replace("\n", "").replace("\r", "")
-            new_results += parse_html(html_one_line)
+            new_results += parse_html(html_one_line, force_title=force_title)
             time.sleep(pause_sec)
             step += 1

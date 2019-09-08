@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-__version__ = "0.05"
+__version__ = "0.06"
 """
 Source : https://github.com/izneo-get/izneo-get
 
@@ -7,10 +7,10 @@ Ce script permet de récupérer une BD présente sur https://www.izneo.com/fr/ d
 
 usage: izneo_get.py [-h] [--session-id SESSION_ID] [--cfduid CFDUID]
                     [--output-folder OUTPUT_FOLDER]
-                    [--output-format {jpg,both,cbz}] [--config CONFIG]
+                    [--output-format {cbz,both,jpg}] [--config CONFIG]
                     [--from-page FROM_PAGE] [--limit LIMIT] [--pause PAUSE]
                     [--full-only] [--continue] [--user-agent USER_AGENT]
-                    [--webp WEBP]
+                    [--webp WEBP] [--no-tree] [--force-title FORCE_TITLE]
                     url
 
 Script pour sauvegarder une BD Izneo.
@@ -27,7 +27,7 @@ optional arguments:
                         L'identifiant cfduid
   --output-folder OUTPUT_FOLDER, -o OUTPUT_FOLDER
                         Répertoire racine de téléchargement
-  --output-format {jpg,both,cbz}, -f {jpg,both,cbz}
+  --output-format {cbz,both,jpg}, -f {cbz,both,jpg}
                         Répertoire racine de téléchargement
   --config CONFIG       Fichier de configuration
   --from-page FROM_PAGE
@@ -40,7 +40,13 @@ optional arguments:
   --continue            Pour reprendre là où on en était
   --user-agent USER_AGENT
                         User agent à utiliser
-  --webp WEBP           Conversion en webp avec une certaine qualité (exemple : --webp 75)
+  --webp WEBP           Conversion en webp avec une certaine qualité (exemple
+                        : --webp 75)
+  --no-tree             Pour ne pas créer l'arborescence dans le répertoire de
+                        téléchargement
+  --force-title FORCE_TITLE
+                        Le titre à utiliser dans les noms de fichier, à la
+                        place de celui trouvé sur la page
 
 CFDUID est la valeur de "cfduid" dans le cookie.
 SESSION_ID est la valeur de "c03aab1711dbd2a02ea11200dde3e3d1" dans le cookie.
@@ -169,6 +175,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "--no-tree", action="store_true", default=False, help="Pour ne pas créer l'arborescence dans le répertoire de téléchargement"
     )
+    parser.add_argument(
+        "--force-title", type=str, default=None, help="Le titre à utiliser dans les noms de fichier, à la place de celui trouvé sur la page"
+    )
     args = parser.parse_args()
 
  
@@ -206,6 +215,7 @@ if __name__ == "__main__":
     continue_from_existing = args.continue_from_existing
     webp = args.webp
     no_tree = args.no_tree
+    force_title = args.force_title
 
     # Création d'une session et création du cookie.
     s = requests.Session()
@@ -222,16 +232,27 @@ if __name__ == "__main__":
         with open(url, 'r') as f:
             lines = f.readlines()
 
+        next_forced_title = ""
         for line in lines:
             line = line.strip()
+            # On cherche si on a un titre forcé.
+            res = ""
+            if line and line[0] == '#':
+                res = re.findall(r"--force-title (.+)", line)
+                res = res[0].strip() if res else ""
+            if res:
+                next_forced_title = res
             if line and line[0] != '#':
-                url_list.append(line)
+                url_list.append([line, next_forced_title])
+                next_forced_title = ""
     else:
-        url_list.append(url)
+        url_list.append([url, force_title])
 
 
 
     for url in url_list:
+        force_title = url[1]
+        url = url[0]
         print("URL: " + url)
         # On récupère les informations de la BD à récupérer.
         # r = s.get(url, cookies=s.cookies, allow_redirects=True)
@@ -312,9 +333,17 @@ if __name__ == "__main__":
                 if not os.path.exists(output_folder + "/" + mid_path): os.mkdir(output_folder + "/" + mid_path)
                 mid_path += "/"
 
-        print("Téléchargement de \"" + clean_name(title + serie + author) + "\"")
+        if force_title:
+            print("Téléchargement de \"" + clean_name(title + serie + author) + "\" en tant que \"" + clean_name(force_title) + "\"")
+            title = clean_name(force_title)
+            save_path = output_folder + "/" + mid_path + title
+        else:
+            print("Téléchargement de \"" + clean_name(title + serie + author) + "\"")
+            save_path = output_folder + "/" + mid_path + clean_name(title + serie + author)
+
+        
         print("{nb_pages} pages attendues".format(nb_pages=nb_pages))
-        save_path = output_folder + "/" + mid_path + clean_name(title + serie + author)
+        
         # Si l'archive existe déjà, on ne télécharge pas cette BD.
         if continue_from_existing and os.path.exists(save_path + ".cbz"):
             print(save_path + ".cbz existe déjà, on passe")
@@ -341,8 +370,8 @@ if __name__ == "__main__":
             page_num = page + from_page
 
             page_txt = ("000000000" + str(page_num))[-nb_digits:]
-            store_path = save_path + "/" + title + " - " + page_txt + ".jpg"
-            store_path_webp = save_path + "/" + title + " - " + page_txt + ".webp"
+            store_path = save_path + "/" + title + " " + page_txt + ".jpg"
+            store_path_webp = save_path + "/" + title + " " + page_txt + ".webp"
 
 
             url = "https://reader.izneo.com/read/" + str(isbn) +  "/" + str(page_num) + "?quality=HD"
