@@ -99,6 +99,7 @@ def clean_name(name):
     for c in chars:
         name = name.replace(c, "_")
     name = re.sub(r"\s+", " ", name)
+    name = re.sub(r"\.+$", "", name)
     return name
 
 
