@@ -148,6 +148,6 @@ python izneo_list.py "largo" --series
 
 
 ## Prérequis
-Python 3
-pip install -r requirements.txt
-L'ordinateur doit posséder les librairies OpenSSL. 
+Python 3  
+pip install -r requirements.txt  
+L'ordinateur doit posséder les librairies OpenSSL.  
