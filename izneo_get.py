@@ -283,18 +283,32 @@ if __name__ == "__main__":
             continue
 
         # Le titre.
-        title = re.findall("<h1 class=\"product-title\" itemprop=\"name\">(.+?)</h1>", html_one_line)
+        title = re.findall("<title>(.+?)- BD à lire en ligne</title>", html_one_line)
         if title:
             title = strip_tags(title[0]).strip()
         else:
-            title = re.findall("<meta property=\"og:title\" content=\"(.+?)\" />", html_one_line)
-            if len(title) > 0:
+            title = re.findall("<h1 class=\"product-title\" itemprop=\"name\">(.+?)</h1>", html_one_line)
+            if title:
                 title = strip_tags(title[0]).strip()
             else:
-                title = ""
+                title = re.findall("<meta property=\"og:title\" content=\"(.+?)\" />", html_one_line)
+                if len(title) > 0:
+                    title = strip_tags(title[0]).strip()
+                else:
+                    title = ""
         title = html.unescape(title)
         title = clean_name(title)
 
+        # Le tome.
+        tome = re.findall("<div class=\"widget\"(.+?)</div>", html_one_line)
+        if tome:
+            tome = " [" + strip_tags("<div" + tome[0]).strip() + "]"
+            tome = tome.replace(":", " ").replace("/", "-")
+            tome = html.unescape(tome)
+            tome = clean_name(tome)
+        else:
+            tome = ""
+        
         # L'ISBN, qui servira d'identifiant de la BD.
         isbn = re.findall("href=\"//reader.izneo.com/read/(.+?)\\?exiturl", html_one_line)
         isbn = strip_tags(isbn[0]).strip() if isbn else ""
@@ -307,6 +321,7 @@ if __name__ == "__main__":
         else:
             serie = ""
         serie = html.unescape(serie)
+        serie = clean_name(serie)
 
         # L'auteur (s'il est spécifié).
         author = re.findall("<div class=\"author\" itemprop=\"author\">(.+?)</div>", html_one_line)
@@ -316,6 +331,7 @@ if __name__ == "__main__":
         else:
             author = ""
         author = html.unescape(author)
+        author = clean_name(author)
 
         # Le nombre de pages annoncé.
         nb_pages = re.findall("Nb de pages</h1>(.+?)</div>", html_one_line)
