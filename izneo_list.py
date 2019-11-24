@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-__version__ = "0.02"
+__version__ = "0.03"
 """
 Source : https://github.com/izneo-get/izneo-get
 
@@ -102,12 +102,12 @@ def requests_retry_session(
 def parse_html(html, force_title=False):
     new_results = 0
     soup = BeautifulSoup(html, features="html.parser")
-    for div in soup.find_all("div", class_="product-list-item"):
+    for div in soup.find_all("div", class_="product-list-albums"):
         is_abo = div.find_all("div", class_="corner abo")
         is_abo = True if is_abo else False
-        link = div.find_all("a", class_="view-details")
+        link = div.find_all("a")
         link = root_path + link[0].get("href") if link else ""
-        title = div.find_all("div", class_="product-title")
+        title = div.find_all("h4", class_="product_title")
         title = title[0].text if title else ""
         title = strip_tags(title)
         if not is_abo:
