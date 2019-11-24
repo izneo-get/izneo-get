@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-__version__ = "0.06"
+__version__ = "0.07"
 """
 Source : https://github.com/izneo-get/izneo-get
 
@@ -302,10 +302,14 @@ if __name__ == "__main__":
         # Le tome.
         tome = re.findall("<div class=\"widget\"(.+?)</div>", html_one_line)
         if tome:
-            tome = " [" + strip_tags("<div" + tome[0]).strip() + "]"
-            tome = tome.replace(":", " ").replace("/", "-")
-            tome = html.unescape(tome)
-            tome = clean_name(tome)
+            tome = re.findall("<section class=\"widget__section\">(.+?)</section>", tome[0])
+            if tome:
+                tome = " [" + strip_tags(tome[0]).strip() + "]"
+                tome = tome.replace(":", " ").replace("/", "-")
+                tome = html.unescape(tome)
+                tome = clean_name(tome)
+            else:
+                tome = ""
         else:
             tome = ""
         
