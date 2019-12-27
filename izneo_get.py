@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-__version__ = "0.07.2"
+__version__ = "0.07"
 """
 Source : https://github.com/izneo-get/izneo-get
 
@@ -191,8 +191,7 @@ if __name__ == "__main__":
     if args.config:
         config_name = args.config
     else:
-        # config_name = re.sub(r"\.py$", ".cfg", os.path.basename(sys.argv[0]))
-        config_name = re.sub(r"\.py$", ".cfg", os.path.abspath(sys.argv[0]))
+        config_name = re.sub(r"\.py$", ".cfg", os.path.basename(sys.argv[0]))
         config_name = re.sub(r"\.exe$", ".cfg", config_name)
     config.read(config_name)
 
@@ -306,11 +305,10 @@ if __name__ == "__main__":
         if tome:
             tome = re.findall("<section class=\"widget__section\">(.+?)</section>", tome[0])
             if tome:
-                tome = strip_tags(tome[0]).strip() + ""
+                tome = " [" + strip_tags(tome[0]).strip() + "]"
                 tome = tome.replace(":", " ").replace("/", "-")
                 tome = html.unescape(tome)
                 tome = clean_name(tome)
-                tome = (' - ' + tome) if tome != title else ''
             else:
                 tome = ""
         else:
@@ -320,9 +318,18 @@ if __name__ == "__main__":
         isbn = re.findall("href=\"//reader.izneo.com/read/(.+?)\\?exiturl", html_one_line)
         isbn = strip_tags(isbn[0]).strip() if isbn else ""
 
-        # C'est toujours l'auteur qui se trouve dans le champ "série".
         # La série (si elle est spécifiée).
-        author = re.findall("<h2 class=\"product-serie\" itemprop=\"isPartOf\">(.+?)</div>", html_one_line)
+        serie = re.findall("<h2 class=\"product-serie\" itemprop=\"isPartOf\">(.+?)</div>", html_one_line)
+        if serie:
+            serie = strip_tags(serie[0]).strip()
+            serie = " (" + re.sub(r"\s+", " ", serie) + ")"
+        else:
+            serie = ""
+        serie = html.unescape(serie)
+        serie = clean_name(serie)
+
+        # L'auteur (s'il est spécifié).
+        author = re.findall("<div class=\"author\" itemprop=\"author\">(.+?)</div>", html_one_line)
         if author:
             author = strip_tags(author[0]).strip()
             author = " (" + re.sub(r"\s+", " ", author) + ")"
@@ -331,25 +338,13 @@ if __name__ == "__main__":
         author = html.unescape(author)
         author = clean_name(author)
 
-        serie = ""
-
-        # # L'auteur (s'il est spécifié).
-        # author = re.findall("<div class=\"author\" itemprop=\"author\">(.+?)</div>", html_one_line)
-        # if author:
-        #     author = strip_tags(author[0]).strip()
-        #     author = " (" + re.sub(r"\s+", " ", author) + ")"
-        # else:
-        #     author = ""
-        # author = html.unescape(author)
-        # author = clean_name(author)
-
         # Le nombre de pages annoncé.
-        nb_pages = re.findall("Nb de pages</dt>(.+?)</dd>", html_one_line)
+        nb_pages = re.findall("Nb de pages</h1>(.+?)</div>", html_one_line)
         if len(nb_pages) > 0:
             nb_pages = int(strip_tags(nb_pages[0]).strip())
         else:
             nb_pages = 999
-        nb_digits = max(3, len(str(nb_pages + page_sup_to_grab)))
+        nb_digits = len(str(nb_pages + page_sup_to_grab))
         page_sup_to_grab = 999
 
         # Si on n'a pas les informations de base, on arrête tout de suite.
@@ -374,8 +369,8 @@ if __name__ == "__main__":
             title = clean_name(force_title)
             save_path = output_folder + "/" + mid_path + title
         else:
-            print("Téléchargement de \"" + clean_name(title + serie + tome + author) + "\"")
-            save_path = output_folder + "/" + mid_path + clean_name(title + serie + tome + author)
+            print("Téléchargement de \"" + clean_name(title + serie + author) + "\"")
+            save_path = output_folder + "/" + mid_path + clean_name(title + serie + author)
 
         
         print("{nb_pages} pages attendues".format(nb_pages=nb_pages))
