@@ -192,6 +192,7 @@ if __name__ == "__main__":
         config_name = args.config
     else:
         config_name = re.sub(r"\.py$", ".cfg", os.path.basename(sys.argv[0]))
+        config_name = re.sub(r"\.exe$", ".cfg", config_name)
     config.read(config_name)
 
     def get_param_or_default(
