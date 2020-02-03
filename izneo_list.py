@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-__version__ = "0.03"
+__version__ = "0.04"
 """
 Source : https://github.com/izneo-get/izneo-get
 
@@ -41,6 +41,7 @@ import configparser
 import shutil
 import time
 from bs4 import BeautifulSoup
+import json
 
 def strip_tags(html):
     """Permet de supprimer tous les tags HTML d'une chaine de caractère.
@@ -123,6 +124,27 @@ def parse_html(html, force_title=False):
     return new_results
 
 
+def parse_html_json(html, force_title=False):
+    content = json.loads(html)
+    new_results = 0
+    for vol in content['albums']['volume']:
+        is_abo = vol['inSubscription']
+        link = root_path + vol['url']
+        title = vol['serie_name'] + ' - '
+        title = title  + ('[' + vol['volume'] + '] ' if 'volume' in vol else '')
+        title = title + vol['title']
+        if not is_abo:
+            title += " (*)"
+        if title and force_title:
+            title += " --force-title " + title
+        title = re.sub(r"\s+", " ", title).strip()
+        if title and link and ((not full_only) or (full_only and is_abo)):
+            print("# " + title)
+            print(link)
+        if title and link:
+            new_results += 1
+    return new_results
+
 
 if __name__ == "__main__":
     cfduid = ""
@@ -199,24 +221,13 @@ if __name__ == "__main__":
     s.cookies.set_cookie(cookie_obj)
 
     if re.match("^http[s]*://.*", search):
-        # On est dans un cas où on a une URL de série.
-        url = search
-
-        step = 0
         new_results = 0
-        while step == 0 or new_results > 0:
-            new_results = 0
-            data = {
-                'limit_album_start':step * 16,
-            }
-            # r = s.post(url, allow_redirects=True, data=data)
-            r = requests_retry_session(session=s).post(url, allow_redirects=True, data=data)
-
-            html_one_line = r.text.replace("\n", "").replace("\r", "")
-            new_results += parse_html(html_one_line, force_title=force_title)
-            time.sleep(pause_sec)
-            step += 1
-
+        # On est dans un cas où on a une URL de série.
+        id = re.findall(".+-(\d+)", search)
+        id = id[0]
+        url = "https://www.izneo.com/fr/api/serie/album/" + str(id) + "?order=2" # + ("&abo=1" if full_only else "")
+        r = requests_retry_session(session=s).post(url, allow_redirects=True)
+        new_results += parse_html_json(r.text, force_title=force_title)
     else:
         url = "https://www.izneo.com/fr/search-album-list"
         if series:
