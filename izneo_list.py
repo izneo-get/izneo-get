@@ -127,22 +127,23 @@ def parse_html(html, force_title=False):
 def parse_html_json(html, force_title=False):
     content = json.loads(html)
     new_results = 0
-    for vol in content['albums']['volume']:
-        is_abo = vol['inSubscription']
-        link = root_path + vol['url']
-        title = vol['serie_name'] + ' - '
-        title = title  + ('[' + vol['volume'] + '] ' if 'volume' in vol else '')
-        title = title + vol['title']
-        if not is_abo:
-            title += " (*)"
-        if title and force_title:
-            title += " --force-title " + title
-        title = re.sub(r"\s+", " ", title).strip()
-        if title and link and ((not full_only) or (full_only and is_abo)):
-            print("# " + title)
-            print(link)
-        if title and link:
-            new_results += 1
+    for current_type in ['volume', 'outside']:
+        for vol in content['albums'][current_type]:
+            is_abo = vol['inSubscription']
+            link = root_path + vol['url']
+            title = vol['serie_name'] + ' - '
+            title = title  + ('[' + vol['volume'] + '] ' if 'volume' in vol else '')
+            title = title + vol['title']
+            if not is_abo:
+                title += " (*)"
+            if title and force_title:
+                title += " --force-title " + title
+            title = re.sub(r"\s+", " ", title).strip()
+            if title and link and ((not full_only) or (full_only and is_abo)):
+                print("# " + title)
+                print(link)
+            if title and link:
+                new_results += 1
     return new_results
 
 
@@ -225,7 +226,7 @@ if __name__ == "__main__":
         # On est dans un cas où on a une URL de série.
         id = re.findall(".+-(\d+)", search)
         id = id[0]
-        url = "https://www.izneo.com/fr/api/serie/album/" + str(id) + "?order=2" # + ("&abo=1" if full_only else "")
+        url = "https://www.izneo.com/fr/api/serie/album/" + str(id) + "?order=2&abo=1" # + ("&abo=1" if full_only else "")
         r = requests_retry_session(session=s).post(url, allow_redirects=True)
         new_results += parse_html_json(r.text, force_title=force_title)
     else:
