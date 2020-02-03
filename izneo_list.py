@@ -132,7 +132,7 @@ def parse_html_json(html, force_title=False):
             is_abo = vol['inSubscription']
             link = root_path + vol['url']
             title = vol['serie_name'] + ' - '
-            title = title  + ('[' + vol['volume'] + '] ' if 'volume' in vol else '')
+            title = title  + ('[' + str(vol['volume']) + '] ' if 'volume' and vol['volume'] in vol else '')
             title = title + vol['title']
             if not is_abo:
                 title += " (*)"
@@ -224,7 +224,9 @@ if __name__ == "__main__":
     if re.match("^http[s]*://.*", search):
         new_results = 0
         # On est dans un cas où on a une URL de série.
-        id = re.findall(".+-(\d+)", search)
+        id = re.findall(".+-(\d+)/", search)
+        if not id:
+            id = re.findall(".+-(\d+)", search)
         id = id[0]
         url = "https://www.izneo.com/fr/api/serie/album/" + str(id) + "?order=2&abo=1" # + ("&abo=1" if full_only else "")
         r = requests_retry_session(session=s).post(url, allow_redirects=True)
