@@ -339,7 +339,7 @@ if __name__ == "__main__":
         author = clean_name(author)
 
         # Le nombre de pages annoncé.
-        nb_pages = re.findall("Nb de pages</h1>(.+?)</div>", html_one_line)
+        nb_pages = re.findall("Nb de pages</dt>(.+?)</dd>", html_one_line)
         if len(nb_pages) > 0:
             nb_pages = int(strip_tags(nb_pages[0]).strip())
         else:
