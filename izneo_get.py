@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-__version__ = "0.07"
+__version__ = "0.07.1"
 """
 Source : https://github.com/izneo-get/izneo-get
 
@@ -344,7 +344,7 @@ if __name__ == "__main__":
             nb_pages = int(strip_tags(nb_pages[0]).strip())
         else:
             nb_pages = 999
-        nb_digits = len(str(nb_pages + page_sup_to_grab))
+        nb_digits = len(str(nb_pages + page_sup_to_grab)) + 1
         page_sup_to_grab = 999
 
         # Si on n'a pas les informations de base, on arrête tout de suite.
