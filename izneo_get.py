@@ -344,7 +344,7 @@ if __name__ == "__main__":
             nb_pages = int(strip_tags(nb_pages[0]).strip())
         else:
             nb_pages = 999
-        nb_digits = len(str(nb_pages + page_sup_to_grab)) + 1
+        nb_digits = max(3, len(str(nb_pages + page_sup_to_grab)))
         page_sup_to_grab = 999
 
         # Si on n'a pas les informations de base, on arrête tout de suite.
