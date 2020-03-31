@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-__version__ = "0.04"
+__version__ = "0.05"
 """
 Source : https://github.com/izneo-get/izneo-get
 
@@ -48,7 +48,7 @@ def strip_tags(html):
 
     Parameters
     ----------
-    html : str
+    search : str
         La chaine de caractère d'entrée.
 
     Returns
@@ -189,7 +189,8 @@ if __name__ == "__main__":
     if args.config:
         config_name = args.config
     else:
-        config_name = re.sub(r"\.py$", ".cfg", os.path.basename(sys.argv[0]).replace("izneo_list", "izneo_get"))
+        # config_name = re.sub(r"\.py$", ".cfg", os.path.basename(sys.argv[0]).replace("izneo_list", "izneo_get"))
+        config_name = re.sub(r"\.py$", ".cfg", os.path.abspath(sys.argv[0]).replace("izneo_list", "izneo_get"))
     config.read(config_name)
 
     def get_param_or_default(
