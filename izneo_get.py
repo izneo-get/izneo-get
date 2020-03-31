@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-__version__ = "0.07.1"
+__version__ = "0.07.2"
 """
 Source : https://github.com/izneo-get/izneo-get
 
@@ -191,7 +191,8 @@ if __name__ == "__main__":
     if args.config:
         config_name = args.config
     else:
-        config_name = re.sub(r"\.py$", ".cfg", os.path.basename(sys.argv[0]))
+        # config_name = re.sub(r"\.py$", ".cfg", os.path.basename(sys.argv[0]))
+        config_name = re.sub(r"\.py$", ".cfg", os.path.abspath(sys.argv[0]))
         config_name = re.sub(r"\.exe$", ".cfg", config_name)
     config.read(config_name)
 
