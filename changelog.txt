@@ -1,13 +1,8 @@
 # Changelog
 
-## Version 1.02.0 (2020-09-13)
-- [BUGFIX] Erreur lorsqu'on donne un fichier contenant une liste d'URLs.
-
-## Version 1.01.0 (2020-09-13)
-- [CHANGE] Le fichier de config n'est plus écrasé. 
-- [CHANGE] La recherche du binaire "chromebrowser*.exe" est désormais récursive. 
-
-## Version 1.00.0 (2020-09-08)
+## Version 1.0.0 (2020-09-08)
 - [NEW] Nouvelle version basée sur Selenium. 
-- [CHANGE] Disparition de l'option "--no-tree" qui devient le comportement par défaut. 
+- [CHANGE] Disparition de l'option "--no-tree" qui devient le comportement par défaut.
 - [CHANGE] Apparition de l'option "--tree" qui permet de forcer la création des sous-répertoires. 
+
+
