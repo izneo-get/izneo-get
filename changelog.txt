@@ -1,0 +1,8 @@
+# Changelog
+
+## Version 1.0.0 (2020-09-08)
+- [NEW] Nouvelle version basée sur Selenium. 
+- [CHANGE] Disparition de l'option "--no-tree" qui devient le comportement par défaut.
+- [CHANGE] Apparition de l'option "--tree" qui permet de forcer la création des sous-répertoires. 
+
+
