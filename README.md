@@ -9,16 +9,17 @@ Il est évident que les BD ne doivent en aucun cas être conservées une fois la
 ### izneo_get
 **Utilisation**  
 ```
-python izneo_get.py [-h] [--session-id SESSION_ID] [--cfduid CFDUID]
+python izneo_get_selenium.py [-h] [--session-id SESSION_ID] [--cfduid CFDUID]
                     [--output-folder OUTPUT_FOLDER]
                     [--output-format {jpg,both,cbz}] [--config CONFIG]
                     [--from-page FROM_PAGE] [--limit LIMIT] [--pause PAUSE]
                     [--full-only] [--continue] [--user-agent USER_AGENT]
-                    [--webp WEBP] [--no-tree] [--force-title FORCE_TITLE]
+                    [--webp WEBP] [--tree] [--force-title FORCE_TITLE]
                     [--encoding ENCODING]
                     url
 
 Script pour sauvegarder une BD Izneo.
+Ce script utilise désormais un driver Chrome piloté par Selenium.
 
 positional arguments:
   url                   L'URL de la BD à récupérer ou le chemin vers un
@@ -47,7 +48,7 @@ optional arguments:
                         User agent à utiliser
   --webp WEBP           Conversion en webp avec une certaine qualité (exemple
                         : --webp 75)
-  --no-tree             Pour ne pas créer l'arborescence dans le répertoire de
+  --tree             Pour créer l'arborescence dans le répertoire de
                         téléchargement
   --force-title FORCE_TITLE
                         Le titre à utiliser dans les noms de fichier, à la
@@ -72,9 +73,9 @@ Pour récupérer la BD dans une archive CBZ avec des images converties en WEBP (
 python izneo_get.py https://www.izneo.com/fr/manga-et-simultrad/shonen/assassination-classroom-4744/assassination-classroom-t1-19197 -f cbz --webp 70
 ```
 
-Pour récupérer une liste de BDs, dans un répertoire d'images sans sous-dossier, sans fichier de config présent :  
+Pour récupérer une liste de BDs, dans un répertoire d'images correspondant à l'arborescence du serveur, sans fichier de config présent :  
 ```
-python izneo_get.py /tmp/input.txt -c abcdef12345678901234567890123456789012345678 -s abcdefghijkl123456789012345 -o /tmp/DOWNLOADS --no-tree
+python izneo_get.py /tmp/input.txt -c abcdef12345678901234567890123456789012345678 -s abcdefghijkl123456789012345 -o /tmp/DOWNLOADS --tree
 ```
 
 
@@ -94,7 +95,7 @@ Menu --> Developpement web --> Inspecteur de stockage --> Cookies
 et recherchez le cookie "https://www.izneo.com".  
 
 
-Ces valeurs peuvent être stockées dans le fichier de configuration "izneo_get.cfg".  
+Ces valeurs peuvent être stockées dans le fichier de configuration "izneo_get_selenium.cfg".  
 
 
 ### izneo_list
@@ -152,6 +153,7 @@ python izneo_list.py "largo" --series
 - Python 3.7+ (non testé avec les versions précédentes)
 - pip
 - Librairies SSL
+- Drivers Chrome
 
 #### Sous Windows
 ##### Python
@@ -178,6 +180,13 @@ pip -v
 pip install pyopenssl
 ```
 - Vous pouvez télécharger [OpenSSL pour Windows](http://gnuwin32.sourceforge.net/packages/openssl.htm). 
+
+##### Drivers Chrome
+- Il faut télécharger le fichier "chromedriver.exe" [sur le site de Chromium](https://chromedriver.chromium.org/downloads) et le copier dans le répertoire 
+```
+bin\
+```
+- Il est possible de le renommer en "chromedriverXX.exe" où "XX" est le numéro de la version. Le système ira chercher celui qui convient à votre version de Chrome installée.
 
 
 #### Sous Linux
