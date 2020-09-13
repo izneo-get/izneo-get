@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-__version__ = "1.01.0"
+__version__ = "1.02.0"
 """
 Source : https://github.com/izneo-get/izneo-get
 
@@ -295,6 +295,32 @@ if __name__ == "__main__":
     prefered_driver = "./bin/chromedriver.exe"
     prefered_driver = config.get("DEFAULT", "prefered_driver", fallback=prefered_driver)
 
+
+    # Liste des URLs à récupérer.
+    url_list = []
+    if os.path.exists(url):
+        if encoding:
+            with open(url, "r", encoding=encoding) as f:
+                lines = f.readlines()
+        else:
+            with open(url, "r") as f:
+                lines = f.readlines()
+        next_forced_title = ""
+        for line in lines:
+            line = line.strip()
+            # On cherche si on a un titre forcé.
+            res = ""
+            if line and line[0] == "#":
+                res = re.findall(r"--force-title (.+)", line)
+                res = res[0].strip() if res else ""
+            if res:
+                next_forced_title = res
+            if line and line[0] != "#":
+                url_list.append([line, next_forced_title])
+                next_forced_title = ""
+    else:
+        url_list.append([url, force_title])
+
     chrome_options = Options()
     chrome_options.add_argument("--headless")
     chrome_options.add_argument("--log-level=3") # Seulement les erreurs fatales.
@@ -318,7 +344,7 @@ if __name__ == "__main__":
             break
 
     driver.set_window_size(dimension, dimension)
-    driver.get(url)
+    driver.get(url_list[0][0])
     driver.add_cookie({"name": "__cfduid", "value": cfduid, "domain": "izneo.com"})
     driver.add_cookie({"name": "lang", "value": "fr", "domain": "izneo.com"})
     driver.add_cookie(
@@ -348,30 +374,7 @@ if __name__ == "__main__":
     )
     s.cookies.set_cookie(cookie_obj)
 
-    # Liste des URLs à récupérer.
-    url_list = []
-    if os.path.exists(url):
-        if encoding:
-            with open(url, "r", encoding=encoding) as f:
-                lines = f.readlines()
-        else:
-            with open(url, "r") as f:
-                lines = f.readlines()
-        next_forced_title = ""
-        for line in lines:
-            line = line.strip()
-            # On cherche si on a un titre forcé.
-            res = ""
-            if line and line[0] == "#":
-                res = re.findall(r"--force-title (.+)", line)
-                res = res[0].strip() if res else ""
-            if res:
-                next_forced_title = res
-            if line and line[0] != "#":
-                url_list.append([line, next_forced_title])
-                next_forced_title = ""
-    else:
-        url_list.append([url, force_title])
+
 
     for url in url_list:
         force_title = url[1]
