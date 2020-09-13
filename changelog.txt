@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 1.02.0 (2020-09-13)
+- [BUGFIX] Erreur lorsqu'on donne un fichier contenant une liste d'URLs.
+
 ## Version 1.01.0 (2020-09-13)
 - [CHANGE] Le fichier de config n'est plus écrasé. 
 - [CHANGE] La recherche du binaire "chromebrowser*.exe" est désormais récursive. 
