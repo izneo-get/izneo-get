@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-__version__ = "1.00.0"
+__version__ = "1.01.0"
 """
 Source : https://github.com/izneo-get/izneo-get
 
@@ -304,14 +304,17 @@ if __name__ == "__main__":
     except:
         # Ce driver n'est pas compatible.
         print(f'Impossible de se connecter avec le driver "{chrome_driver}"')
-        for filename in glob.iglob("./bin/chromedriver*.exe", recursive=True):
+        for filename in glob.iglob("./**/chromedriver*.exe", recursive=True):
             chrome_driver = filename
             try:
                 driver = webdriver.Chrome(chrome_driver, options=chrome_options)
             except:
                 print(f'Impossible de se connecter avec le driver "{chrome_driver}"')
                 continue
-            prefered_driver = filename
+            if filename != prefered_driver:
+                prefered_driver = filename
+                print(f"Vous pouvez ajouter / modifier la ligne suivante à votre fichier de configuration :")
+                print(f"prefered_driver = {prefered_driver}")
             break
 
     driver.set_window_size(dimension, dimension)
@@ -327,8 +330,8 @@ if __name__ == "__main__":
     )
 
     config["DEFAULT"]["prefered_driver"] = prefered_driver
-    with open(config_name, "w") as configfile:
-        config.write(configfile)
+    # with open(config_name, "w") as configfile:
+    #     config.write(configfile)
 
     # Création d'une session et création du cookie.
     s = requests.Session()
