@@ -70,11 +70,10 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
-from PIL import Image, ImageChops
+from PIL import Image, ImageOps
 import glob
 from io import BytesIO
 import base64
-
 
 def strip_tags(html):
     """Permet de supprimer tous les tags HTML d'une chaine de caractère.
@@ -133,15 +132,23 @@ def requests_retry_session(
     session.mount("https://", adapter)
     return session
 
+def trim_white(im):
+    tmp_im = im.convert("RGB")
+    tmp_im = ImageOps.invert(tmp_im)
+    bbox = tmp_im.getbbox()
+    if bbox:
+        return im.crop((bbox[0] + 1, bbox[1] + 1, bbox[2] - 1, bbox[3] - 1))
+    else:
+        return im
 
 def trim(im):
-    bg = Image.new(im.mode, im.size, im.getpixel((0, 0)))
-    diff = ImageChops.difference(im, bg)
-    diff = ImageChops.add(diff, diff, 2.0, -100)
-    bbox = diff.getbbox()
+    tmp_im = im.convert("RGB")
+    bbox = tmp_im.getbbox()
     if bbox:
+        # return trim_white(im.crop((bbox[0] + 1, bbox[1] + 1, bbox[2] - 1, bbox[3] - 1)))
         return im.crop(bbox)
-
+    else:
+        return im
 
 if __name__ == "__main__":
     cfduid = ""
@@ -581,9 +588,12 @@ if __name__ == "__main__":
                 try:
                     canvas = driver.find_element_by_id("iz_canv")
                     if len(canvas.screenshot_as_base64) > 10000:
+                        # Screenshot of the current page.
+                        # Image.open(BytesIO(base64.b64decode(canvas.screenshot_as_base64))).save("tmp.png")
                         loaded = True
                 except:
                     print("Waiting...")
+                    attempts = attempts - 1
                     time.sleep(0.5)
 
             if loaded == False or page_url != driver.current_url:
