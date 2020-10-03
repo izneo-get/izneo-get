@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-__version__ = "1.03.0"
+__version__ = "1.04.0"
 """
 Source : https://github.com/izneo-get/izneo-get
 
@@ -75,6 +75,7 @@ import glob
 from io import BytesIO
 import base64
 
+
 def strip_tags(html):
     """Permet de supprimer tous les tags HTML d'une chaine de caractère.
 
@@ -132,6 +133,7 @@ def requests_retry_session(
     session.mount("https://", adapter)
     return session
 
+
 def trim_white(im):
     tmp_im = im.convert("RGB")
     tmp_im = ImageOps.invert(tmp_im)
@@ -141,6 +143,7 @@ def trim_white(im):
     else:
         return im
 
+
 def trim(im):
     tmp_im = im.convert("RGB")
     bbox = tmp_im.getbbox()
@@ -149,6 +152,27 @@ def trim(im):
         return im.crop(bbox)
     else:
         return im
+
+
+def get_file_content_chrome(driver, uri):
+    result = driver.execute_async_script(
+        """
+    var uri = arguments[0];
+    var callback = arguments[1];
+    var toBase64 = function(buffer){for(var r,n=new Uint8Array(buffer),t=n.length,a=new Uint8Array(4*Math.ceil(t/3)),i=new Uint8Array(64),o=0,c=0;64>c;++c)i[c]="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/".charCodeAt(c);for(c=0;t-t%3>c;c+=3,o+=4)r=n[c]<<16|n[c+1]<<8|n[c+2],a[o]=i[r>>18],a[o+1]=i[r>>12&63],a[o+2]=i[r>>6&63],a[o+3]=i[63&r];return t%3===1?(r=n[t-1],a[o]=i[r>>2],a[o+1]=i[r<<4&63],a[o+2]=61,a[o+3]=61):t%3===2&&(r=(n[t-2]<<8)+n[t-1],a[o]=i[r>>10],a[o+1]=i[r>>4&63],a[o+2]=i[r<<2&63],a[o+3]=61),new TextDecoder("ascii").decode(a)};
+    var xhr = new XMLHttpRequest();
+    xhr.responseType = 'arraybuffer';
+    xhr.onload = function(){ callback(toBase64(xhr.response)) };
+    xhr.onerror = function(){ callback(xhr.status) };
+    xhr.open('GET', uri);
+    xhr.send();
+    """,
+        uri,
+    )
+    if type(result) == int:
+        raise Exception("Request failed with status %s" % result)
+    return base64.b64decode(result)
+
 
 if __name__ == "__main__":
     cfduid = ""
@@ -302,7 +326,6 @@ if __name__ == "__main__":
     prefered_driver = "./bin/chromedriver.exe"
     prefered_driver = config.get("DEFAULT", "prefered_driver", fallback=prefered_driver)
 
-
     # Liste des URLs à récupérer.
     url_list = []
     if os.path.exists(url):
@@ -330,7 +353,7 @@ if __name__ == "__main__":
 
     chrome_options = Options()
     chrome_options.add_argument("--headless")
-    chrome_options.add_argument("--log-level=3") # Seulement les erreurs fatales.
+    chrome_options.add_argument("--log-level=3")  # Seulement les erreurs fatales.
     chrome_driver = prefered_driver
     try:
         driver = webdriver.Chrome(chrome_driver, options=chrome_options)
@@ -346,7 +369,9 @@ if __name__ == "__main__":
                 continue
             if filename != prefered_driver:
                 prefered_driver = filename
-                print(f"Vous pouvez ajouter / modifier la ligne suivante à votre fichier de configuration :")
+                print(
+                    f"Vous pouvez ajouter / modifier la ligne suivante à votre fichier de configuration :"
+                )
                 print(f"prefered_driver = {prefered_driver}")
             break
 
@@ -381,112 +406,143 @@ if __name__ == "__main__":
     )
     s.cookies.set_cookie(cookie_obj)
 
-
-
     for url in url_list:
         force_title = url[1]
         url = url[0]
         print("URL: " + url)
-        page_sup_to_grab = 20
-        # On récupère les informations de la BD à récupérer.
-        # r = s.get(url, cookies=s.cookies, allow_redirects=True)
-        r = requests_retry_session(session=s).get(
-            url, cookies=s.cookies, allow_redirects=True
-        )
-        html_one_line = r.text.replace("\n", "").replace("\r", "")
 
-        soup = BeautifulSoup(html_one_line, features="html.parser")
-
-        is_abo = False
-        div = soup.find("div", id="product_cover")
-        if div:
-            is_abo = div.find_all("div", class_="corner abo")
-            is_abo = True if is_abo else False
-
-        if not is_abo:
-            print("Cette BD n'est pas disponible dans l'abonnement")
-        if full_only and not is_abo:
-            continue
-
-        # Le titre.
-        title = re.findall("<title>(.+?)- (.*) à lire en ligne</title>", html_one_line)
-        if title:
-            title = strip_tags(title[0][0]).strip()
+        # On regarde si c'est un lien direct ou une page de description du livre.
+        driver.get(url)
+        time.sleep(0.5)
+        book = None
+        try:
+            book = driver.execute_script(f"return book")
+        except:
+            pass
+        if book:
+            # C'est un lien direct.
+            print("[INFO] URL directe")
+            page_sup_to_grab = 0
+            title = book["title"]
+            subtitle = book["subtitle"]
+            if len(subtitle):
+                title = title + " - " + subtitle
+            nb_pages = len(book["pages"])
+            nb_digits = max(3, len(str(nb_pages + page_sup_to_grab)))
+            categories = book["albumUrl"].split("/")
+            serie = ""
+            tome = ""
+            author = ""
+            url_id = re.search(".+-(.+)/read/(.+)", url)[1]
+            url = re.search("(.+)/read/(.+)", url)[1]
         else:
+            # C'est la page de description d'une BD
+            page_sup_to_grab = 20
+            # On récupère les informations de la BD à récupérer.
+            # r = s.get(url, cookies=s.cookies, allow_redirects=True)
+            r = requests_retry_session(session=s).get(
+                url, cookies=s.cookies, allow_redirects=True
+            )
+            html_one_line = r.text.replace("\n", "").replace("\r", "")
+
+            soup = BeautifulSoup(html_one_line, features="html.parser")
+
+            is_abo = False
+            div = soup.find("div", id="product_cover")
+            if div:
+                is_abo = div.find_all("div", class_="corner abo")
+                is_abo = True if is_abo else False
+
+            if not is_abo:
+                print("Cette BD n'est pas disponible dans l'abonnement")
+            if full_only and not is_abo:
+                continue
+
+            # Le titre.
             title = re.findall(
-                '<h1 class="product-title" itemprop="name">(.+?)</h1>', html_one_line
+                "<title>(.+?)- (.*) à lire en ligne</title>", html_one_line
             )
             if title:
-                title = strip_tags(title[0]).strip()
+                title = strip_tags(title[0][0]).strip()
             else:
                 title = re.findall(
-                    '<meta property="og:title" content="(.+?)" />', html_one_line
+                    '<h1 class="product-title" itemprop="name">(.+?)</h1>',
+                    html_one_line,
                 )
-                if len(title) > 0:
+                if title:
                     title = strip_tags(title[0]).strip()
                 else:
-                    title = ""
-        title = html.unescape(title)
-        title = clean_name(title)
+                    title = re.findall(
+                        '<meta property="og:title" content="(.+?)" />', html_one_line
+                    )
+                    if len(title) > 0:
+                        title = strip_tags(title[0]).strip()
+                    else:
+                        title = ""
+            title = html.unescape(title)
+            title = clean_name(title)
 
-        # Le tome.
-        tome = re.findall('<div class="widget"(.+?)</div>', html_one_line)
-        if tome:
-            tome = re.findall(
-                '<section class="widget__section">(.+?)</section>', tome[0]
-            )
+            # Le tome.
+            tome = re.findall('<div class="widget"(.+?)</div>', html_one_line)
             if tome:
-                tome = strip_tags(tome[0]).strip() + ""
-                tome = tome.replace(":", " ").replace("/", "-")
-                tome = html.unescape(tome)
-                tome = clean_name(tome)
-                tome = (" - " + tome) if tome != title else ""
+                tome = re.findall(
+                    '<section class="widget__section">(.+?)</section>', tome[0]
+                )
+                if tome:
+                    tome = strip_tags(tome[0]).strip() + ""
+                    tome = tome.replace(":", " ").replace("/", "-")
+                    tome = html.unescape(tome)
+                    tome = clean_name(tome)
+                    tome = (" - " + tome) if tome != title else ""
+                else:
+                    tome = ""
             else:
                 tome = ""
-        else:
-            tome = ""
 
-        # C'est toujours l'auteur qui se trouve dans le champ "série".
-        # La série (si elle est spécifiée).
-        author = re.findall(
-            '<h2 class="product-serie" itemprop="isPartOf">(.+?)</div>', html_one_line
-        )
-        if author:
-            author = strip_tags(author[0]).strip()
-            author = " (" + re.sub(r"\s+", " ", author) + ")"
-        else:
-            author = ""
-        author = html.unescape(author)
-        author = clean_name(author)
+            # C'est toujours l'auteur qui se trouve dans le champ "série".
+            # La série (si elle est spécifiée).
+            author = re.findall(
+                '<h2 class="product-serie" itemprop="isPartOf">(.+?)</div>',
+                html_one_line,
+            )
+            if author:
+                author = strip_tags(author[0]).strip()
+                author = " (" + re.sub(r"\s+", " ", author) + ")"
+            else:
+                author = ""
+            author = html.unescape(author)
+            author = clean_name(author)
 
-        serie = ""
+            serie = ""
 
-        # # L'auteur (s'il est spécifié).
-        # author = re.findall("<div class=\"author\" itemprop=\"author\">(.+?)</div>", html_one_line)
-        # if author:
-        #     author = strip_tags(author[0]).strip()
-        #     author = " (" + re.sub(r"\s+", " ", author) + ")"
-        # else:
-        #     author = ""
-        # author = html.unescape(author)
-        # author = clean_name(author)
+            # # L'auteur (s'il est spécifié).
+            # author = re.findall("<div class=\"author\" itemprop=\"author\">(.+?)</div>", html_one_line)
+            # if author:
+            #     author = strip_tags(author[0]).strip()
+            #     author = " (" + re.sub(r"\s+", " ", author) + ")"
+            # else:
+            #     author = ""
+            # author = html.unescape(author)
+            # author = clean_name(author)
 
-        # Le nombre de pages annoncé.
-        nb_pages = re.findall("Nb de pages</dt>(.+?)</dd>", html_one_line)
-        if len(nb_pages) > 0:
-            nb_pages = int(strip_tags(nb_pages[0]).strip())
-        else:
-            nb_pages = 999
-        nb_digits = max(3, len(str(nb_pages + page_sup_to_grab)))
-        page_sup_to_grab = 999
+            # Le nombre de pages annoncé.
+            nb_pages = re.findall("Nb de pages</dt>(.+?)</dd>", html_one_line)
+            if len(nb_pages) > 0:
+                nb_pages = int(strip_tags(nb_pages[0]).strip())
+            else:
+                nb_pages = 999
+            nb_digits = max(3, len(str(nb_pages + page_sup_to_grab)))
+            page_sup_to_grab = 999
 
-        # Si on n'a pas les informations de base, on arrête tout de suite.
-        if not title:
-            print("ERROR Impossible de trouver le livre")
-            break
+            # Si on n'a pas les informations de base, on arrête tout de suite.
+            if not title:
+                print("ERROR Impossible de trouver le livre")
+                break
+
+            url_id = re.search(".+-(.+)", url)[1]
+            categories = url.replace(root_path, "").split("/")
 
         # Création du répertoire de destination.
-        categories = url.replace(root_path, "").split("/")
         mid_path = ""
         if tree:
             for elem in categories[:-1]:
@@ -532,7 +588,6 @@ if __name__ == "__main__":
         # Les changements sont essentiellement à partir d'ici.
 
         # Reset du bookmark
-        url_id = re.search(".+-(.+)", url)[1]
         data = {"book": url_id, "page": 0}
         r = requests_retry_session(session=s).post(
             "https://www.izneo.com/book/updatebookmark",
@@ -551,6 +606,7 @@ if __name__ == "__main__":
             store_path_webp = save_path + "/" + title + " " + page_txt + ".webp"
 
             page_url = url + "/read/" + str(page_num) + "?exiturl=" + url
+            page_url_previous = url + "/read/" + str(page_num - 1) + "?exiturl=" + url
             # Si la page existe déjà sur le disque, on passe.
             if continue_from_existing and (
                 (
@@ -586,17 +642,29 @@ if __name__ == "__main__":
             attempts = 20
             while not loaded and attempts > 0:
                 try:
-                    canvas = driver.find_element_by_id("iz_canv")
-                    if len(canvas.screenshot_as_base64) > 10000:
-                        # Screenshot of the current page.
-                        # Image.open(BytesIO(base64.b64decode(canvas.screenshot_as_base64))).save("tmp.png")
+                    page_size = driver.execute_script(
+                        f"return book.pages[{page}].jpeg.size"
+                    )
+                    page_js = driver.execute_script(
+                        f"return URL.createObjectURL(book.pages[{page}].jpeg)"
+                    )
+                    bytes = get_file_content_chrome(driver, page_js)
+                    if len(bytes) >= page_size:
                         loaded = True
+                    # canvas = driver.find_element_by_id("iz_canv")
+                    # if len(canvas.screenshot_as_base64) > 10000:
+                    #     # Screenshot of the current page.
+                    #     # Image.open(BytesIO(base64.b64decode(canvas.screenshot_as_base64))).save("tmp.png")
+                    #     loaded = True
                 except:
                     print("Waiting...")
                     attempts = attempts - 1
                     time.sleep(0.5)
 
-            if loaded == False or page_url != driver.current_url:
+            if loaded == False or (
+                page_url != driver.current_url
+                and page_url_previous != driver.current_url
+            ):
                 print()
                 if page_url != driver.current_url:
                     print(f"[ERROR] Impossible de récupérer la page {page}")
@@ -610,23 +678,27 @@ if __name__ == "__main__":
                     )
                 break
 
+            im = Image.open(BytesIO(bytes))
+            im.save(store_path)
 
-            canvas_base64 = driver.execute_script(
-                "return arguments[0].toDataURL('image/png').substring(21);", canvas
-            )
-            # On enlève les 21 premiers caractères qui sont "data:image/png;base64".
+            # canvas_base64 = driver.execute_script(
+            #     "return arguments[0].toDataURL('image/png').substring(21);", canvas
+            # )
+            # # On enlève les 21 premiers caractères qui sont "data:image/png;base64".
 
-            canvas_png = base64.b64decode(canvas_base64)
-            im = Image.open(BytesIO(canvas_png))
-            im = trim(im)
-            # im.save("screenshot.png", optimize=True)
+            # canvas_png = base64.b64decode(canvas_base64)
+            # im = Image.open(BytesIO(canvas_png))
+            # im = trim(im)
 
             # Si demandé, on converti en webp.
             if webp:
+                # im.save(store_path_webp, "webp", quality=webp)
+                im = Image.open(store_path)
                 im.save(store_path_webp, "webp", quality=webp)
-            else:
-                rgb_im = im.convert("RGB")
-                rgb_im.save(store_path, quality=100, optimize=True, progressive=True)
+                os.remove(store_path)
+            # else:
+            #     rgb_im = im.convert("RGB")
+            #     rgb_im.save(store_path, quality=100, optimize=True, progressive=True)
 
             progress_bar += "."
             progress_message = (
