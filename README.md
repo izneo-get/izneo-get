@@ -7,6 +7,7 @@ Il est évident que les BD ne doivent en aucun cas être conservées une fois la
 
 ## Utilisation
 ### izneo_get
+### izneo_get_selenium
 **Utilisation**  
 ```
 python izneo_get_selenium.py [-h] [--session-id SESSION_ID] [--cfduid CFDUID]
