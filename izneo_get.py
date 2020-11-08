@@ -408,7 +408,7 @@ if __name__ == "__main__":
         title_used = title
         if len(subtitle) > 0:
             title_used = title + " - " + subtitle
-        if len(subtitle) > 0 and len(tome) > 0:
+        if len(subtitle) > 0 and tome and len(tome) > 0:
             title_used = title + " - " + ("000" + tome)[-2:] + ". " + subtitle
         if len(subtitle) == 0 and len(tome) > 0:
             title_used = title + " - " + ("000" + tome)[-2:]
