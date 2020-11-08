@@ -24,6 +24,9 @@
 
 ## izneo_get.py
 
+### Version 0.08.01 (2020-11-08)
+- [BUGFIX] Gestion du cas des tomes non renseignés. 
+
 ### Version 0.08.0 (2020-10-05)
 - [CHANGE] Script is blacked.
 - [CHANGE] Disparition de l'option "--no-tree" qui devient le comportement par défaut. 
