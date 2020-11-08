@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-__version__ = "0.08.0"
+__version__ = "0.08.01"
 """
 Source : https://github.com/izneo-get/izneo-get
 
@@ -406,6 +406,10 @@ if __name__ == "__main__":
                 mid_path += "/"
 
         title_used = title
+        if not subtitle:
+            subtitle = ''
+        if not tome:
+            tome = ''
         if len(subtitle) > 0:
             title_used = title + " - " + subtitle
         if len(subtitle) > 0 and len(tome) > 0:
