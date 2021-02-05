@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-__version__ = "1.04.0"
+__version__ = "1.04.1"
 """
 Source : https://github.com/izneo-get/izneo-get
 
@@ -424,6 +424,8 @@ if __name__ == "__main__":
             print("[INFO] URL directe")
             page_sup_to_grab = 0
             title = book["title"]
+            title = html.unescape(title)
+            title = clean_name(title)
             subtitle = book["subtitle"]
             if len(subtitle):
                 title = title + " - " + subtitle
