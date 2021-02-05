@@ -207,3 +207,16 @@ ou
 ```
 pip install -r requirements.txt
 ```
+
+En cas de problème, on peut installer les dépendances à la main : 
+```
+cd izneo-get
+python -m venv env
+env\Scripts\activate
+python.exe -m pip install --upgrade pip
+python.exe -m pip install pycryptodome
+python.exe -m pip install requests
+python.exe -m pip install beautifulsoup4
+python.exe -m pip install Pillow
+
+```
