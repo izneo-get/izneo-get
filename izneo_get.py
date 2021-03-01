@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-__version__ = "0.08.01"
+__version__ = "0.08.02"
 """
 Source : https://github.com/izneo-get/izneo-get
 
@@ -413,9 +413,9 @@ if __name__ == "__main__":
         if len(subtitle) > 0:
             title_used = title + " - " + subtitle
         if len(subtitle) > 0 and len(tome) > 0:
-            title_used = title + " - " + ("000" + tome)[-2:] + ". " + subtitle
+            title_used = title + " - " + ("00000" + tome)[-max(2, len(tome)):] + ". " + subtitle
         if len(subtitle) == 0 and len(tome) > 0:
-            title_used = title + " - " + ("000" + tome)[-2:]
+            title_used = title + " - " + ("00000" + tome)[-max(2, len(tome)):]
 
         if force_title:
             print(

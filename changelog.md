@@ -24,6 +24,9 @@
 
 ## izneo_get.py
 
+### Version 0.08.02 (2021-03-01)
+- [BUGFIX] Gestion du cas quand il y a plus de 99 tomes. 
+
 ### Version 0.08.01 (2020-11-08)
 - [BUGFIX] Gestion du cas des tomes non renseignés. 
 
