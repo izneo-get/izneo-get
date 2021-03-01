@@ -151,8 +151,8 @@ python izneo_list.py "largo" --series
 
 ## Installation
 ### Prérequis
-- Python 3.7+ (non testé avec les versions précédentes)
-- pip
+- Python 3.9+ (non testé avec les versions précédentes)
+- pip (désormais inclus avec Python)
 - Librairies SSL
 - Drivers Chrome
 
@@ -162,18 +162,6 @@ Allez sur ce site :
 https://www.python.org/downloads/windows/  
 et suivez les instructions d'installation de Python 3.
 
-##### Pip
-- Téléchargez [get-pip.py](https://bootstrap.pypa.io/get-pip.py) dans un répertoire.
-- Ouvrez une ligne de commande et mettez vous dans ce répertoire.
-- Entrez la commande suivante :  
-```
-python get-pip.py
-```
-- Voilà ! Pip est installé !
-- Vous pouvez vérifier en tapant la commande :  
-```
-pip -v
-```
 
 ##### Librairies SSL
 - Vous pouvez essayer de les installer avec la commande :  
@@ -182,7 +170,7 @@ pip install pyopenssl
 ```
 - Vous pouvez télécharger [OpenSSL pour Windows](http://gnuwin32.sourceforge.net/packages/openssl.htm). 
 
-##### Drivers Chrome
+##### Drivers Chrome (pour la version qui utilise Selenium)
 - Il faut télécharger le fichier "chromedriver.exe" [sur le site de Chromium](https://chromedriver.chromium.org/downloads) et le copier dans le répertoire 
 ```
 bin\
@@ -193,19 +181,22 @@ bin\
 #### Sous Linux
 Si vous êtes sous Linux, vous n'avez pas besoin de moi pour installer Python, Pip ou SSL...  
 
-### Téléchargement
-- Vous pouvez cloner le repo git :  
+
+### Installation
+- En ligne de commande, clonez le repo : 
 ```
 git clone https://github.com/izneo-get/izneo-get.git
+cd izneo-get
 ```
-ou  
-- Vous pouvez télécharger uniquement le binaire Windows (expérimental).  
-
-
-### Configuration
-(pour la version "script" uniquement)
+- (optionnel) Créez un environnement virtuel Python dédié : 
 ```
-pip install -r requirements.txt
+python -m venv env
+env\Scripts\activate
+python -m pip install --upgrade pip
+```
+- Installez les dépendances : 
+```
+python -m pip install -r requirements.txt
 ```
 
 En cas de problème, on peut installer les dépendances à la main : 
@@ -218,5 +209,11 @@ python.exe -m pip install pycryptodome
 python.exe -m pip install requests
 python.exe -m pip install beautifulsoup4
 python.exe -m pip install Pillow
-
+python.exe -m pip install selenium
 ```
+  
+  
+ou  
+  
+  
+- Vous pouvez télécharger uniquement le [binaire Windows](https://github.com/izneo-get/izneo-get/releases/latest) (expérimental).  
