@@ -6,8 +6,7 @@ Il est évident que les BD ne doivent en aucun cas être conservées une fois la
 
 
 ## Utilisation
-### izneo_get
-### izneo_get_selenium
+### izneo_get / izneo_get_selenium
 **Utilisation**  
 ```
 python izneo_get_selenium.py [-h] [--session-id SESSION_ID] [--cfduid CFDUID]
@@ -79,6 +78,11 @@ Pour récupérer une liste de BDs, dans un répertoire d'images correspondant à
 python izneo_get.py /tmp/input.txt -c abcdef12345678901234567890123456789012345678 -s abcdefghijkl123456789012345 -o /tmp/DOWNLOADS --tree
 ```
 
+Récupérer tous les tomes d'une série : 
+```
+python izneo_list.py --full-only URL > input.txt
+python izneo_get.py --continue --output-format cbz --webp 70 --full-only input.txt
+```
 
 CFDUID est la valeur de "cfduid" dans le cookie.  
 SESSION_ID est la valeur de "c03aab1711dbd2a02ea11200dde3e3d1" dans le cookie.  
