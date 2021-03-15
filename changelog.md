@@ -36,3 +36,8 @@
 - [CHANGE] Apparition de l'option "--tree" qui permet de forcer la création des sous-répertoires. 
 - [CHANGE] Compatibilité "webtoons".
 - [BUGFIX] Le script déchiffre les images. 
+
+
+## izneo_list.py
+### Version 0.06 (2021-03-15)
+- [CHANGE] Modification de la façon de récupérer les listes (corrige le problème avec les séries de plus de 40 tomes).

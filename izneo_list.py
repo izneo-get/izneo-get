@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-__version__ = "0.05"
+__version__ = "0.06"
 """
 Source : https://github.com/izneo-get/izneo-get
 
@@ -124,15 +124,26 @@ def parse_html(html, force_title=False):
     return new_results
 
 
-def parse_html_json(html, force_title=False):
-    content = json.loads(html)
+def parse_from_id(session, id, force_title=False):
+    # Infos de la série
+    url = f"https://www.izneo.com/fr/api/web/serie/{id}"
+    r = requests_retry_session(session=session).get(url, allow_redirects=True)
+    content = json.loads(r.text)
+    serie_name = content['name']
+
+    next_page = True
+    index = 0
     new_results = 0
-    for current_type in ['volume', 'outside']:
-        for vol in content['albums'][current_type]:
+    while next_page:
+        url = f"https://www.izneo.com/fr/api/web/serie/{id}/volumes/new/{index}/20"
+        r = requests_retry_session(session=s).get(url, allow_redirects=True)
+        content = json.loads(r.text)
+        next_page = len(content['albums'])
+        for vol in content['albums']:
             is_abo = vol['inSubscription']
             link = root_path + vol['url']
-            title = vol['serie_name'] + ' - '
-            title = title  + ('[' + str(vol['volume']) + '] ' if 'volume' and vol['volume'] in vol else '')
+            title = serie_name + ' - '
+            title = title  + ('[' + str(vol['volume']) + '] ' if 'volume' in vol and vol['volume'] else '')
             title = title + vol['title']
             if not is_abo:
                 title += " (*)"
@@ -144,6 +155,7 @@ def parse_html_json(html, force_title=False):
                 print(link)
             if title and link:
                 new_results += 1
+        index += 20
     return new_results
 
 
@@ -229,9 +241,7 @@ if __name__ == "__main__":
         if not id:
             id = re.findall(".+-(\d+)", search)
         id = id[0]
-        url = "https://www.izneo.com/fr/api/serie/album/" + str(id) + "?order=2&abo=1" # + ("&abo=1" if full_only else "")
-        r = requests_retry_session(session=s).post(url, allow_redirects=True)
-        new_results += parse_html_json(r.text, force_title=force_title)
+        new_results += parse_from_id(s, id, force_title=force_title)
     else:
         url = "https://www.izneo.com/fr/search-album-list"
         if series:
