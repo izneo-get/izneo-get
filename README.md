@@ -7,6 +7,8 @@ Il est évident que les BD ne doivent en aucun cas être conservées une fois la
 
 ## Utilisation
 ### izneo_get / izneo_get_selenium
+Si `izneo-get` fonctionne, il est préférable de l'utiliser (plus rapide et pas de transformation faite sur les images sources). `izneo_get_selenium` est une version qui a été développée avant que le déchiffrement des images soit possible.
+
 **Utilisation**  
 ```
 python izneo_get_selenium.py [-h] [--session-id SESSION_ID] [--cfduid CFDUID]
@@ -158,7 +160,8 @@ python izneo_list.py "largo" --series
 - Python 3.9+ (non testé avec les versions précédentes)
 - pip (désormais inclus avec Python)
 - Librairies SSL
-- Drivers Chrome
+- Drivers Chrome (pour la version "Selenium")
+- Chrome (pour la version "Selenium")
 
 #### Sous Windows
 ##### Python
