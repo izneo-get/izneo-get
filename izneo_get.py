@@ -275,7 +275,7 @@ if __name__ == "__main__":
     # Création d'une session et création du cookie.
     s = requests.Session()
     cookie_obj = requests.cookies.create_cookie(
-        domain=".izneo.com", name="__cfduid", value=cfduid
+        domain=".izneo.com", name="PHPSESSID", value=cfduid
     )
     s.cookies.set_cookie(cookie_obj)
     cookie_obj = requests.cookies.create_cookie(

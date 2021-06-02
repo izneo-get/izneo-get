@@ -1,5 +1,5 @@
 [DEFAULT]
-# La valeur de la variable de cookie "cfduid".
+# La valeur de la variable de cookie "PHPSESSID".
 cfduid = REMPLISSEZ_MOI
 
 # La valeur de la variable de cookie "c03aab1711dbd2a02ea11200dde3e3d1".
