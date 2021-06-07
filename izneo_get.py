@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-__version__ = "0.08.02"
+__version__ = "0.09.00"
 """
 Source : https://github.com/izneo-get/izneo-get
 
@@ -325,24 +325,42 @@ if __name__ == "__main__":
         url = url[0]
         print("URL: " + url)
 
+        sign = ""
+        if re.match("(.+)login=cvs&sign=([^&]*)", url):
+            sign = re.match("(.+)login=cvs&sign=([^&]*)", url)[2]
+            sign = "login=cvs&sign=" + sign
+
+        book_id = ""
+        if url.isnumeric():
+            book_id = url
+        
+        # URL direct.
+        if re.match("(.+)reader\.(.+)/read/(.+)", url):
+            book_id = re.search("(.+)reader\.(.+)/read/(.+)", url)[3]
+            if re.match("(.+)\?(.*)", book_id):
+                book_id = re.search("(.+)\?(.*)", book_id)[1]
+
         # On teste si c'est une page de description ou une page de lecture.
         if re.match("(.+)/read/(.+)", url):
             url = re.search("(.+)/read/(.+)", url)[1]
+        if re.match(".+-(.+)", url):
+            book_id = re.search(".+-(.+)", url)[1]
+        
 
-        book_id = re.search(".+-(.+)", url)[1]
         page_sup_to_grab = 0
+
         # On récupère les informations de la BD à récupérer.
         # r = s.get(url, cookies=s.cookies, allow_redirects=True)
-        r = requests_retry_session(session=s).get(
-            url, cookies=s.cookies, allow_redirects=True
-        )
-        html_one_line = r.text.replace("\n", "").replace("\r", "")
+        # r = requests_retry_session(session=s).get(
+        #     url, cookies=s.cookies, allow_redirects=True
+        # )
+        # html_one_line = r.text.replace("\n", "").replace("\r", "")
 
-        soup = BeautifulSoup(html_one_line, features="html.parser")
+        # soup = BeautifulSoup(html_one_line, features="html.parser")
 
         # Récupération des informations de la BD.
         r = requests_retry_session(session=s).get(
-            f"https://www.izneo.com/book/{book_id}",
+            f"https://www.izneo.com/book/{book_id}" + (f"?{sign}" if sign else ""),
             cookies=s.cookies,
             allow_redirects=True,
             headers=headers,
@@ -449,7 +467,7 @@ if __name__ == "__main__":
             store_path = save_path + "/" + title_used + " " + page_txt + ".jpg"
             store_path_webp = save_path + "/" + title_used + " " + page_txt + ".webp"
 
-            url = f"https://www.izneo.com/book/{book_id}/{page_num}?type=full"
+            url = f"https://www.izneo.com/book/{book_id}/{page_num}?type=full" + (f"&{sign}" if sign else "")
 
             # Si la page existe déjà sur le disque, on passe.
             if continue_from_existing and (

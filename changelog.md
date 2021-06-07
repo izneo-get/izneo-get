@@ -23,6 +23,8 @@
 
 
 ## izneo_get.py
+### Version 0.09.00 (2021-06-07)
+- [NEW] Ajout compatibilité avec les tomes empruntés par médiathèque. 
 
 ### Version 0.08.02 (2021-03-01)
 - [BUGFIX] Gestion du cas quand il y a plus de 99 tomes. 
