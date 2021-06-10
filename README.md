@@ -86,8 +86,8 @@ python izneo_list.py --full-only URL > input.txt
 python izneo_get.py --continue --output-format cbz --webp 70 --full-only input.txt
 ```
 
-CFDUID est la valeur de "cfduid" dans le cookie.  
-SESSION_ID est la valeur de "c03aab1711dbd2a02ea11200dde3e3d1" dans le cookie.  
+CFDUID est la valeur de "PHPSESSID" dans les cookies. Cette information semble désormais facultative.  
+SESSION_ID est la valeur de "c03aab1711dbd2a02ea11200dde3e3d1" dans les cookies.  
 
 Pour les obtenir, identifiez vous sur https://www.izneo.com/fr/ et recherchez votre cookie avec votre navigateur web.
 
