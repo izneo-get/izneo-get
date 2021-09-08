@@ -2,7 +2,7 @@ beautifulsoup4==4.9.3
 certifi==2020.12.5
 chardet==4.0.0
 idna==2.10
-Pillow==8.1.0
+Pillow==8.3.2
 pycryptodome==3.10.1
 requests==2.25.1
 selenium==3.141.0
