@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-__version__ = "0.09.00"
+__version__ = "0.09.01"
 """
 Source : https://github.com/izneo-get/izneo-get
 
@@ -70,7 +70,7 @@ from PIL import Image
 import json
 from Crypto.Cipher import AES
 import base64
-
+import urllib.parse
 
 def strip_tags(html):
     """Permet de supprimer tous les tags HTML d'une chaine de caractère.
@@ -323,6 +323,11 @@ if __name__ == "__main__":
     for url in url_list:
         force_title = url[1]
         url = url[0]
+        if res := re.search(r"exiturl=(.+?)\&", url):
+            replace_from = res[1]
+            replace_to = urllib.parse.quote_plus(replace_from)
+            url = url.replace(replace_from, replace_to)
+            url = url.replace("%25", "%")
         print("URL: " + url)
 
         sign = ""
