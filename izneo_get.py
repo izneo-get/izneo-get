@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-__version__ = "0.09.01"
+__version__ = "0.09.02"
 """
 Source : https://github.com/izneo-get/izneo-get
 
@@ -129,6 +129,25 @@ def requests_retry_session(
     session.mount("https://", adapter)
     return session
 
+def check_version():
+    latest_version_url = (
+        "https://raw.githubusercontent.com/izneo-get/izneo-get/master/VERSION"
+    )
+    res = requests.get(latest_version_url)
+    if res.status_code != 200:
+        print(f"Version {__version__} (impossible de vérifier la version officielle)")
+    else:
+        latest_version = res.text.strip()
+        if latest_version == __version__:
+            print(f"Version {__version__} (version officielle)")
+        else:
+            print(
+                f"Version {__version__} (la version officielle est différente: {latest_version})"
+            )
+            print(
+                "Please check https://github.com/izneo-get/izneo-get/releases/latest"
+            )
+    print()
 
 if __name__ == "__main__":
     cfduid = ""
@@ -228,6 +247,9 @@ if __name__ == "__main__":
         help="L'encoding du fichier d'entrée de liste d'URLs (ex : \"utf-8\")",
     )
     args = parser.parse_args()
+
+    # Vérification que c'est la dernière version.
+    check_version()
 
     # Lecture de la config.
     config = configparser.RawConfigParser()
