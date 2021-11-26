@@ -23,6 +23,11 @@
 
 
 ## izneo_get.py
+### Version 0.09.03 (2021-11-26)
+- [NEW] Vérification de la version. 
+- [CHANGE] Suppression d'un paramètre inutile. 
+- [BUGFIX] Ajout compatibilité avec les tomes empruntés par médiathèque. 
+
 ### Version 0.09.00 (2021-06-07)
 - [NEW] Ajout compatibilité avec les tomes empruntés par médiathèque. 
 

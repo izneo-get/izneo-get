@@ -5,7 +5,7 @@ Source : https://github.com/izneo-get/izneo-get
 
 Ce script permet de récupérer une BD présente sur https://www.izneo.com/fr/ dans la limite des capacités de notre compte existant.
 
-usage: izneo_get.py [-h] [--session-id SESSION_ID] [--cfduid CFDUID]
+usage: izneo_get.py [-h] [--session-id SESSION_ID] 
                     [--output-folder OUTPUT_FOLDER]
                     [--output-format {jpg,both,cbz}] [--config CONFIG]
                     [--from-page FROM_PAGE] [--limit LIMIT] [--pause PAUSE]
@@ -24,8 +24,6 @@ optional arguments:
   -h, --help            show this help message and exit
   --session-id SESSION_ID, -s SESSION_ID
                         L'identifiant de session
-  --cfduid CFDUID, -c CFDUID
-                        L'identifiant cfduid
   --output-folder OUTPUT_FOLDER, -o OUTPUT_FOLDER
                         Répertoire racine de téléchargement
   --output-format {jpg,both,cbz}, -f {jpg,both,cbz}
@@ -50,7 +48,6 @@ optional arguments:
                         place de celui trouvé sur la page
   --encoding ENCODING   L'encoding du fichier d'entrée de liste d'URLs (ex : "utf-8")
 
-CFDUID est la valeur de "cfduid" dans le cookie.
 SESSION_ID est la valeur de "c03aab1711dbd2a02ea11200dde3e3d1" dans le cookie.
 Ces valeurs peuvent être stockées dans le fichier de configuration "izneo_get.cfg".
 """
@@ -150,7 +147,6 @@ def check_version():
     print()
 
 if __name__ == "__main__":
-    cfduid = ""
     session_id = ""
     root_path = "https://www.izneo.com/"
 
@@ -166,9 +162,6 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--session-id", "-s", type=str, default=None, help="L'identifiant de session"
-    )
-    parser.add_argument(
-        "--cfduid", "-c", type=str, default=None, help="L'identifiant cfduid"
     )
     parser.add_argument(
         "--output-folder",
@@ -271,7 +264,6 @@ if __name__ == "__main__":
         else:
             return cli_value
 
-    cfduid = get_param_or_default(config, "cfduid", "", args.cfduid)
     session_id = get_param_or_default(config, "session_id", "", args.session_id)
     user_agent = get_param_or_default(config, "user_agent", "", args.user_agent)
     pause_sec = get_param_or_default(config, "pause", "", args.pause)
@@ -296,10 +288,6 @@ if __name__ == "__main__":
 
     # Création d'une session et création du cookie.
     s = requests.Session()
-    cookie_obj = requests.cookies.create_cookie(
-        domain=".izneo.com", name="PHPSESSID", value=cfduid
-    )
-    s.cookies.set_cookie(cookie_obj)
     cookie_obj = requests.cookies.create_cookie(
         domain=".izneo.com", name="lang", value="fr"
     )
