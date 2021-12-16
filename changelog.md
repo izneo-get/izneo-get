@@ -23,7 +23,10 @@
 
 
 ## izneo_get.py
-### Version 0.09.03 (2021-11-26)
+### Version 0.09.03 (2021-12-16)
+- [BUGFIX] Gestion des espaces en fin de nom de fichier. 
+
+### Version 0.09.02 (2021-11-26)
 - [NEW] Vérification de la version. 
 - [CHANGE] Suppression d'un paramètre inutile. 
 - [BUGFIX] Ajout compatibilité avec les tomes empruntés par médiathèque. 
