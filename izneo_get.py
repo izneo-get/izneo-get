@@ -103,6 +103,7 @@ def clean_name(name):
         name = name.replace(c, "_")
     name = re.sub(r"\s+", " ", name)
     name = re.sub(r"\.+$", "", name)
+    name = name.strip()
     return name
 
 
