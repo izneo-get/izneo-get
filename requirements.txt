@@ -1,6 +1,6 @@
 beautifulsoup4==4.10.0
 pil==1.1.6
-Pillow==8.4.0
+Pillow==9.0.0
 pycryptodome==3.12.0
 requests==2.26.0
 selenium==3.141.0
