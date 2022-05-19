@@ -3,5 +3,4 @@ pil==1.1.6
 Pillow==8.4.0
 pycryptodome==3.12.0
 requests==2.26.0
-selenium==3.141.0
 urllib3==1.26.3
