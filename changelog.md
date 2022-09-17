@@ -49,5 +49,9 @@
 
 
 ## izneo_list.py
+### Version 0.07 (2022-09-17)
+- [CHANGE] La récupération d'albums ne peut se faire qu'à partir de l'URL d'une série. 
+- [CHANGE] La recherche textuelle retourne les URL des séries. 
+
 ### Version 0.06 (2021-03-15)
 - [CHANGE] Modification de la façon de récupérer les listes (corrige le problème avec les séries de plus de 40 tomes).

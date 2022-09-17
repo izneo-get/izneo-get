@@ -7,54 +7,40 @@ Il est évident que les BD ne doivent en aucun cas être conservées une fois la
 
 ## Utilisation
 ### izneo_get / izneo_get_selenium
-Si `izneo-get` fonctionne, il est préférable de l'utiliser (plus rapide et pas de transformation faite sur les images sources). `izneo_get_selenium` est une version qui a été développée avant que le déchiffrement des images soit possible.
+Si `izneo-get` fonctionne, il est préférable de l'utiliser (plus rapide et pas de transformation faite sur les images sources). `izneo_get_selenium` est une version qui a été développée avant que le déchiffrement des images soit possible et qui n'est plus maintenue.
 
 **Utilisation**  
 ```
-python izneo_get_selenium.py [-h] [--session-id SESSION_ID] [--cfduid CFDUID]
-                    [--output-folder OUTPUT_FOLDER]
-                    [--output-format {jpg,both,cbz}] [--config CONFIG]
-                    [--from-page FROM_PAGE] [--limit LIMIT] [--pause PAUSE]
-                    [--full-only] [--continue] [--user-agent USER_AGENT]
-                    [--webp WEBP] [--tree] [--force-title FORCE_TITLE]
-                    [--encoding ENCODING]
+python izneo_get.py [-h] [--session-id SESSION_ID] [--output-folder OUTPUT_FOLDER] [--output-format {cbz,jpg,both}] [--config CONFIG] [--from-page FROM_PAGE] [--limit LIMIT] [--pause PAUSE] [--full-only]
+                    [--continue] [--user-agent USER_AGENT] [--webp WEBP] [--tree] [--force-title FORCE_TITLE] [--encoding ENCODING]
                     url
 
 Script pour sauvegarder une BD Izneo.
-Ce script utilise désormais un driver Chrome piloté par Selenium.
 
 positional arguments:
-  url                   L'URL de la BD à récupérer ou le chemin vers un
-                        fichier local contenant une liste d'URLs
+  url                   L'URL de la BD à récupérer ou le chemin vers un fichier local contenant une liste d'URLs
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   --session-id SESSION_ID, -s SESSION_ID
                         L'identifiant de session
-  --cfduid CFDUID, -c CFDUID
-                        L'identifiant cfduid
   --output-folder OUTPUT_FOLDER, -o OUTPUT_FOLDER
                         Répertoire racine de téléchargement
-  --output-format {jpg,both,cbz}, -f {jpg,both,cbz}
+  --output-format {cbz,jpg,both}, -f {cbz,jpg,both}
                         Répertoire racine de téléchargement
   --config CONFIG       Fichier de configuration
   --from-page FROM_PAGE
                         Première page à récupérer (défaut : 0)
   --limit LIMIT         Nombre de pages à récupérer au maximum (défaut : 1000)
-  --pause PAUSE         Pause (en secondes) à respecter après chaque
-                        téléchargement d'image
-  --full-only           Ne prend que les liens de BD disponible dans
-                        l'abonnement
+  --pause PAUSE         Pause (en secondes) à respecter après chaque téléchargement d'image
+  --full-only           Ne prend que les liens de BD disponible dans l'abonnement
   --continue            Pour reprendre là où on en était
   --user-agent USER_AGENT
                         User agent à utiliser
-  --webp WEBP           Conversion en webp avec une certaine qualité (exemple
-                        : --webp 75)
-  --tree             Pour créer l'arborescence dans le répertoire de
-                        téléchargement
+  --webp WEBP           Conversion en webp avec une certaine qualité (exemple : --webp 75)
+  --tree                Pour créer l'arborescence dans le répertoire de téléchargement
   --force-title FORCE_TITLE
-                        Le titre à utiliser dans les noms de fichier, à la
-                        place de celui trouvé sur la page
+                        Le titre à utiliser dans les noms de fichier, à la place de celui trouvé sur la page
   --encoding ENCODING   L'encoding du fichier d'entrée de liste d'URLs (ex : "utf-8")
 ```
 
@@ -77,7 +63,7 @@ python izneo_get.py https://www.izneo.com/fr/manga-et-simultrad/shonen/assassina
 
 Pour récupérer une liste de BDs, dans un répertoire d'images correspondant à l'arborescence du serveur, sans fichier de config présent :  
 ```
-python izneo_get.py /tmp/input.txt -c abcdef12345678901234567890123456789012345678 -s abcdefghijkl123456789012345 -o /tmp/DOWNLOADS --tree
+python izneo_get.py /tmp/input.txt -s abcdefghijkl123456789012345 -o /tmp/DOWNLOADS --tree
 ```
 
 Récupérer tous les tomes d'une série : 
@@ -86,7 +72,6 @@ python izneo_list.py --full-only URL > input.txt
 python izneo_get.py --continue --output-format cbz --webp 70 --full-only input.txt
 ```
 
-CFDUID est la valeur de "PHPSESSID" dans les cookies. Cette information semble désormais facultative.  
 SESSION_ID est la valeur de "c03aab1711dbd2a02ea11200dde3e3d1" dans les cookies.  
 
 Pour les obtenir, identifiez vous sur https://www.izneo.com/fr/ et recherchez votre cookie avec votre navigateur web.
@@ -108,28 +93,20 @@ Ces valeurs peuvent être stockées dans le fichier de configuration "izneo_get_
 ### izneo_list
 **Utilisation**  
 ```
-python izneo_list.py [-h] [--session-id SESSION_ID] [--cfduid CFDUID]
-                     [--config CONFIG] [--pause PAUSE] [--full-only]
-                     [--series] [--force-title]
-                     search
+python izneo_list.py [-h] [--session-id SESSION_ID] [--config CONFIG] [--pause PAUSE] [--full-only] [--force-title] search
 
 Script pour obtenir une liste de BDs Izneo.
 
 positional arguments:
   search                La page de série qui contient une liste de BDs
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   --session-id SESSION_ID, -s SESSION_ID
                         L'identifiant de session
-  --cfduid CFDUID, -c CFDUID
-                        L'identifiant cfduid
   --config CONFIG       Fichier de configuration
-  --pause PAUSE         Pause (en secondes) à respecter après chaque appel de
-                        page
-  --full-only           Ne prend que les liens de BD disponible dans
-                        l'abonnement
-  --series              La recherche ne se fait que sur les séries
+  --pause PAUSE         Pause (en secondes) à respecter après chaque appel de page
+  --full-only           Ne prend que les liens de BD disponible dans l'abonnement
   --force-title         Ajoute l'élément "--force-tilte" dans la sortie
 ```
 
@@ -144,14 +121,9 @@ Pour récupérer la liste des liens d'une série, dans la limite des albums comp
 python izneo_list.py https://www.izneo.com/fr/manga-et-simultrad/shonen/naruto-567 --full-only --force-title
 ```
 
-Pour récupérer la liste des liens d'albums qui correspondent à la rechercher "largo" (fichier de config présent) :  
-```
-python izneo_list.py "largo"
-```
-
 Pour récupérer la liste des liens de séries qui correspondent à la rechercher "largo" (fichier de config présent) :  
 ```
-python izneo_list.py "largo" --series
+python izneo_list.py "largo"
 ```
 
 
