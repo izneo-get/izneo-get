@@ -122,6 +122,7 @@ def parse_from_id(session, id, force_title=False):
     for url_base in [
         f"https://www.izneo.com/fr/api/web/serie/{id}/volumes/new",
         f"https://www.izneo.com/fr/api/web/serie/{id}/others/new",
+        f"https://www.izneo.com/fr/api/web/serie/{id}/chapters/new",
     ]:
         next_page = True
         index = 0
