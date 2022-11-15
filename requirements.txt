@@ -2,5 +2,5 @@ selenium==3.141.0
 urllib3==1.26.3
 requests==2.26.0
 beautifulsoup4==4.11.1
-Pillow==9.2.0
+Pillow==9.3.0
 pycryptodome==3.15.0
