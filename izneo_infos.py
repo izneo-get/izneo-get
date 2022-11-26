@@ -20,6 +20,7 @@ import re
 import argparse
 from bs4 import BeautifulSoup
 import json
+from dict2xml import dict2xml
 
 
 def parse_html(html):
@@ -61,7 +62,12 @@ def main():
     parser = argparse.ArgumentParser(description="""Script pour obtenir les infos sur une BD Izneo.""")
     parser.add_argument("url", metavar="URL", type=str, default=None, help="L'URL d'une BD.")
     parser.add_argument(
-        "--output", "-o", type=str, metavar="OUTPUT_FILE", default="", help="Enregistrer le résultat dans un fichier."
+        "--output",
+        "-o",
+        type=str,
+        metavar="OUTPUT_FILE",
+        default="",
+        help="Enregistrer le résultat dans un fichier (JSON ou XML).",
     )
     args = parser.parse_args()
 
@@ -86,10 +92,16 @@ def main():
     for key, val in infos.items():
         print(f"{key:20} : {val}")
     if output_file:
-        if not output_file.lower().endswith(".json"):
+        if not output_file.lower().endswith(".json") and not output_file.lower().endswith(".xml"):
             output_file += ".json"
-        with open(output_file, "w", encoding="utf-8") as f:
-            json.dump(infos, f, indent=4, ensure_ascii=False)
+        if output_file.lower().endswith(".json"):
+            with open(output_file, "w", encoding="utf-8") as f:
+                json.dump(infos, f, indent=4, ensure_ascii=False)
+        if output_file.lower().endswith(".xml"):
+            with open(output_file, "w", encoding="utf-8") as f:
+                xml = dict2xml(infos, wrap="root", indent="  ")
+                f.write(xml)
+
         print()
         print(f'Les informations ont été enregistrées dans le fichier "{output_file}".')
 
