@@ -45,28 +45,28 @@ options:
 ```
 
 Exemple :  
-Pour récupérer la BD dans un répertoire d'images (fichier de config présent) :  
+* Pour récupérer la BD dans un répertoire d'images (fichier de config présent) :  
 ```
 python izneo_get.py https://www.izneo.com/fr/manga-et-simultrad/shonen/assassination-classroom-4744/assassination-classroom-t1-19197
 ```
 
 
-Pour récupérer la BD dans une archive CBZ en forçant le titre (fichier de config présent) :  
+* Pour récupérer la BD dans une archive CBZ en forçant le titre (fichier de config présent) :  
 ```
 python izneo_get.py https://www.izneo.com/fr/manga-et-simultrad/shonen/assassination-classroom-4744/assassination-classroom-t1-19197 -f cbz --force-title "[Yusei Matsui] Assassination Classroom - Tome 1"
 ```
 
-Pour récupérer la BD dans une archive CBZ avec des images converties en WEBP (fichier de config présent) :  
+* Pour récupérer la BD dans une archive CBZ avec des images converties en WEBP (fichier de config présent) :  
 ```
 python izneo_get.py https://www.izneo.com/fr/manga-et-simultrad/shonen/assassination-classroom-4744/assassination-classroom-t1-19197 -f cbz --webp 70
 ```
 
-Pour récupérer une liste de BDs, dans un répertoire d'images correspondant à l'arborescence du serveur, sans fichier de config présent :  
+* Pour récupérer une liste de BDs, dans un répertoire d'images correspondant à l'arborescence du serveur, sans fichier de config présent :  
 ```
 python izneo_get.py /tmp/input.txt -s abcdefghijkl123456789012345 -o /tmp/DOWNLOADS --tree
 ```
 
-Récupérer tous les tomes d'une série : 
+* Récupérer tous les tomes d'une série : 
 ```
 python izneo_list.py --full-only URL > input.txt
 python izneo_get.py --continue --output-format cbz --webp 70 --full-only input.txt
@@ -111,21 +111,66 @@ options:
 ```
 
 Exemple :  
-Pour récupérer la liste des liens d'une série (fichier de config présent) :  
+* Pour récupérer la liste des liens d'une série (fichier de config présent) :  
 ```
 python izneo_list.py https://www.izneo.com/fr/manga-et-simultrad/shonen/naruto-567
 ```
 
-Pour récupérer la liste des liens d'une série, dans la limite des albums complets inclus dans l'abonnement en ajoutant le tag "--force-title" (fichier de config présent) :  
+* Pour récupérer la liste des liens d'une série, dans la limite des albums complets inclus dans l'abonnement en ajoutant le tag "--force-title" (fichier de config présent) :  
 ```
 python izneo_list.py https://www.izneo.com/fr/manga-et-simultrad/shonen/naruto-567 --full-only --force-title
 ```
 
-Pour récupérer la liste des liens de séries qui correspondent à la rechercher "largo" (fichier de config présent) :  
+* Pour récupérer la liste des liens de séries qui correspondent à la rechercher "largo" (fichier de config présent) :  
 ```
 python izneo_list.py "largo"
 ```
 
+### izneo_infos
+**Utilisation**  
+```
+python izneo_infos.py [-h] [--output OUTPUT_FILE] URL
+
+Script pour obtenir les infos sur une BD Izneo.
+
+positional arguments:
+  URL                   L'URL d'une BD.
+
+options:
+  -h, --help            show this help message and exit
+  --output OUTPUT_FILE, -o OUTPUT_FILE
+                        Enregistrer le résultat dans un fichier.
+```
+Exemple :  
+* Pour afficher les informations d'une BD :  
+```
+python izneo_infos.py https://www.izneo.com/fr/manga-et-simultrad/shonen/assassination-classroom-4744/assassination-classroom-t1-19197
+```
+Le résultat sera : 
+```
+Genres               : Shonen | Action / Aventure
+Auteur               : Yusei Matsui
+Editeur              : Kana
+Numéro               : 1/21
+Paru le              : 22/11/2013
+Public               : 12 ans et +
+Modes de Lecture     : HD
+title                : Assassination classroom
+subtitle             : Assassination classroom T1
+serie_name           : Assassination classroom
+volume               : 1
+shelf_name           : Manga
+gender_name          : Shonen
+readDirection        : rtl
+synopsis             : Une salle de cours, un professeur, des élèves... et des coups de feu !
+Les élèves de la classe 3-E du collège de Kunugigaoka sont des assassins en herbe, et leur professeur est leur cible à abattre !
+Découvrez le quotidien insolite d'un drôle de professeur et de ses élèves !!
+```
+
+* Pour enregistrer les informations d'une BD dans un fichier :  
+```
+python izneo_infos.py --output assassination-classroom-t1.json https://www.izneo.com/fr/manga-et-simultrad/shonen/assassination-classroom-4744/assassination-classroom-t1-19197
+```
 
 ## Installation
 ### Prérequis
