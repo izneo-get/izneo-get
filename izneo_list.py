@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-__version__ = "0.07"
+__version__ = "0.07.1"
 """
 Source : https://github.com/izneo-get/izneo-get
 
@@ -119,31 +119,36 @@ def parse_from_id(session, id, force_title=False):
     content = json.loads(r.text)
     serie_name = content["name"]
 
-    next_page = True
-    index = 0
-    new_results = 0
-    while next_page:
-        url = f"https://www.izneo.com/fr/api/web/serie/{id}/volumes/new/{index}/20"
-        r = requests_retry_session(session=s).get(url, allow_redirects=True)
-        content = json.loads(r.text)
-        next_page = len(content["albums"])
-        for vol in content["albums"]:
-            is_abo = vol["inSubscription"]
-            link = root_path + vol["url"]
-            title = serie_name + " - "
-            title = title + ("[" + str(vol["volume"]) + "] " if "volume" in vol and vol["volume"] else "")
-            title = title + vol["title"]
-            if not is_abo:
-                title += " (*)"
-            if title and force_title:
-                title += " --force-title " + title
-            title = re.sub(r"\s+", " ", title).strip()
-            if title and link and ((not full_only) or (full_only and is_abo)):
-                print("# " + title)
-                print(link)
-            if title and link:
-                new_results += 1
-        index += 20
+    for url_base in [
+        f"https://www.izneo.com/fr/api/web/serie/{id}/volumes/new",
+        f"https://www.izneo.com/fr/api/web/serie/{id}/others/new",
+        f"https://www.izneo.com/fr/api/web/serie/{id}/chapters/new",
+    ]:
+        next_page = True
+        index = 0
+        new_results = 0
+        while next_page:
+            url = f"{url_base}/{index}/20"
+            r = requests_retry_session(session=s).get(url, allow_redirects=True)
+            content = json.loads(r.text)
+            next_page = len(content["albums"])
+            for vol in content["albums"]:
+                is_abo = vol["inSubscription"]
+                link = root_path + vol["url"]
+                title = serie_name + " - "
+                title = title + ("[" + str(vol["volume"]) + "] " if "volume" in vol and vol["volume"] else "")
+                title = title + vol["title"]
+                if not is_abo:
+                    title += " (*)"
+                if title and force_title:
+                    title += " --force-title " + title
+                title = re.sub(r"\s+", " ", title).strip()
+                if title and link and ((not full_only) or (full_only and is_abo)):
+                    print("# " + title)
+                    print(link)
+                if title and link:
+                    new_results += 1
+            index += 20
     return new_results
 
 
