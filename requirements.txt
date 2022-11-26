@@ -4,4 +4,4 @@ Pillow==9.3.0
 pycryptodome==3.15.0
 requests==2.26.0
 selenium==3.141.0
-urllib3==1.26.3
+urllib3==1.26.5
