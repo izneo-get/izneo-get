@@ -139,7 +139,7 @@ positional arguments:
 options:
   -h, --help            show this help message and exit
   --output OUTPUT_FILE, -o OUTPUT_FILE
-                        Enregistrer le résultat dans un fichier.
+                        Enregistrer le résultat dans un fichier (JSON ou XML).
 ```
 Exemple :  
 * Pour afficher les informations d'une BD :  
@@ -170,6 +170,10 @@ Découvrez le quotidien insolite d'un drôle de professeur et de ses élèves !!
 * Pour enregistrer les informations d'une BD dans un fichier :  
 ```
 python izneo_infos.py --output assassination-classroom-t1.json https://www.izneo.com/fr/manga-et-simultrad/shonen/assassination-classroom-4744/assassination-classroom-t1-19197
+```
+ou
+```
+python izneo_infos.py --output assassination-classroom-t1.xml https://www.izneo.com/fr/manga-et-simultrad/shonen/assassination-classroom-4744/assassination-classroom-t1-19197
 ```
 
 ## Installation
