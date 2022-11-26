@@ -42,7 +42,7 @@ def get_infos_from_id(book_id: int, sign: str = ""):
     )
     book_infos = json.loads(r.text)["data"]
     items = ["title", "subtitle", "serie_name", "volume", "shelf_name", "gender_name", "readDirection", "synopsis"]
-    filtered_infos = {i: book_infos[i].strip() for i in items if i in book_infos}
+    filtered_infos = {i: book_infos[i].strip() for i in items if i in book_infos and book_infos[i]}
     return filtered_infos
 
 
