@@ -383,7 +383,7 @@ if __name__ == "__main__":
         )
         book_infos = json.loads(r.text)["data"]
 
-        is_abo = book_infos["state"] == "subscription"
+        is_abo = book_infos["state"] == "subscription" or "purchased"
 
         if not is_abo:
             print("Cette BD n'est pas disponible dans l'abonnement")
