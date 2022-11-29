@@ -69,6 +69,7 @@ from Crypto.Cipher import AES
 import base64
 import urllib.parse
 
+
 def strip_tags(html):
     """Permet de supprimer tous les tags HTML d'une chaine de caractère.
 
@@ -127,10 +128,9 @@ def requests_retry_session(
     session.mount("https://", adapter)
     return session
 
+
 def check_version():
-    latest_version_url = (
-        "https://raw.githubusercontent.com/izneo-get/izneo-get/master/VERSION"
-    )
+    latest_version_url = "https://raw.githubusercontent.com/izneo-get/izneo-get/master/VERSION"
     res = requests.get(latest_version_url)
     if res.status_code != 200:
         print(f"Version {__version__} (impossible de vérifier la version officielle)")
@@ -139,31 +139,24 @@ def check_version():
         if latest_version == __version__:
             print(f"Version {__version__} (version officielle)")
         else:
-            print(
-                f"Version {__version__} (la version officielle est différente: {latest_version})"
-            )
-            print(
-                "Please check https://github.com/izneo-get/izneo-get/releases/latest"
-            )
+            print(f"Version {__version__} (la version officielle est différente: {latest_version})")
+            print("Please check https://github.com/izneo-get/izneo-get/releases/latest")
     print()
+
 
 if __name__ == "__main__":
     session_id = ""
     root_path = "https://www.izneo.com/"
 
     # Parse des arguments passés en ligne de commande.
-    parser = argparse.ArgumentParser(
-        description="""Script pour sauvegarder une BD Izneo."""
-    )
+    parser = argparse.ArgumentParser(description="""Script pour sauvegarder une BD Izneo.""")
     parser.add_argument(
         "url",
         type=str,
         default=None,
         help="L'URL de la BD à récupérer ou le chemin vers un fichier local contenant une liste d'URLs",
     )
-    parser.add_argument(
-        "--session-id", "-s", type=str, default=None, help="L'identifiant de session"
-    )
+    parser.add_argument("--session-id", "-s", type=str, default=None, help="L'identifiant de session")
     parser.add_argument(
         "--output-folder",
         "-o",
@@ -179,9 +172,7 @@ if __name__ == "__main__":
         default="jpg",
         help="Répertoire racine de téléchargement",
     )
-    parser.add_argument(
-        "--config", type=str, default=None, help="Fichier de configuration"
-    )
+    parser.add_argument("--config", type=str, default=None, help="Fichier de configuration")
     parser.add_argument(
         "--from-page",
         type=int,
@@ -213,9 +204,7 @@ if __name__ == "__main__":
         default=False,
         help="Pour reprendre là où on en était",
     )
-    parser.add_argument(
-        "--user-agent", type=str, default=None, help="User agent à utiliser"
-    )
+    parser.add_argument("--user-agent", type=str, default=None, help="User agent à utiliser")
     parser.add_argument(
         "--webp",
         type=int,
@@ -257,11 +246,7 @@ if __name__ == "__main__":
 
     def get_param_or_default(config, param_name, default_value, cli_value=None):
         if cli_value is None:
-            return (
-                config.get("DEFAULT", param_name)
-                if config.has_option("DEFAULT", param_name)
-                else default_value
-            )
+            return config.get("DEFAULT", param_name) if config.has_option("DEFAULT", param_name) else default_value
         else:
             return cli_value
 
@@ -289,9 +274,7 @@ if __name__ == "__main__":
 
     # Création d'une session et création du cookie.
     s = requests.Session()
-    cookie_obj = requests.cookies.create_cookie(
-        domain=".izneo.com", name="lang", value="fr"
-    )
+    cookie_obj = requests.cookies.create_cookie(domain=".izneo.com", name="lang", value="fr")
     s.cookies.set_cookie(cookie_obj)
     cookie_obj = requests.cookies.create_cookie(
         domain=".izneo.com", name="c03aab1711dbd2a02ea11200dde3e3d1", value=session_id
@@ -349,7 +332,7 @@ if __name__ == "__main__":
         book_id = ""
         if url.isnumeric():
             book_id = url
-        
+
         # URL direct.
         if re.match("(.+)reader\.(.+)/read/(.+)", url):
             book_id = re.search("(.+)reader\.(.+)/read/(.+)", url)[3]
@@ -361,7 +344,6 @@ if __name__ == "__main__":
             url = re.search("(.+)/read/(.+)", url)[1]
         if re.match(".+-(.+)", url):
             book_id = re.search(".+-(.+)", url)[1]
-        
 
         page_sup_to_grab = 0
 
@@ -383,11 +365,11 @@ if __name__ == "__main__":
         )
         book_infos = json.loads(r.text)["data"]
 
-        is_abo = book_infos["state"] == "subscription"
+        is_sub_or_purch = book_infos["state"] in ["subscription", "purchased"]
 
-        if not is_abo:
+        if not is_sub_or_purch:
             print("Cette BD n'est pas disponible dans l'abonnement")
-        if full_only and not is_abo:
+        if full_only and not is_sub_or_purch:
             continue
 
         # Le titre.
@@ -441,24 +423,18 @@ if __name__ == "__main__":
 
         title_used = title
         if not subtitle:
-            subtitle = ''
+            subtitle = ""
         if not tome:
-            tome = ''
+            tome = ""
         if len(subtitle) > 0:
             title_used = title + " - " + subtitle
         if len(subtitle) > 0 and len(tome) > 0:
-            title_used = title + " - " + ("00000" + tome)[-max(2, len(tome)):] + ". " + subtitle
+            title_used = title + " - " + ("00000" + tome)[-max(2, len(tome)) :] + ". " + subtitle
         if len(subtitle) == 0 and len(tome) > 0:
-            title_used = title + " - " + ("00000" + tome)[-max(2, len(tome)):]
+            title_used = title + " - " + ("00000" + tome)[-max(2, len(tome)) :]
 
         if force_title:
-            print(
-                'Téléchargement de "'
-                + clean_name(title_used)
-                + '" en tant que "'
-                + clean_name(force_title)
-                + '"'
-            )
+            print('Téléchargement de "' + clean_name(title_used) + '" en tant que "' + clean_name(force_title) + '"')
             title_used = clean_name(force_title)
         else:
             print('Téléchargement de "' + clean_name(title_used) + '"')
@@ -487,27 +463,12 @@ if __name__ == "__main__":
 
             # Si la page existe déjà sur le disque, on passe.
             if continue_from_existing and (
-                (
-                    not webp
-                    and os.path.exists(store_path)
-                    and os.path.getsize(store_path)
-                )
-                or (
-                    webp
-                    and os.path.exists(store_path_webp)
-                    and os.path.getsize(store_path_webp)
-                )
+                (not webp and os.path.exists(store_path) and os.path.getsize(store_path))
+                or (webp and os.path.exists(store_path_webp) and os.path.getsize(store_path_webp))
             ):
                 progress_bar += "x"
                 progress_message = (
-                    "\r"
-                    + "[page "
-                    + str(page_num + 1)
-                    + " / ~"
-                    + str(nb_pages)
-                    + "] "
-                    + progress_bar
-                    + " "
+                    "\r" + "[page " + str(page_num + 1) + " / ~" + str(nb_pages) + "] " + progress_bar + " "
                 )
                 # print("x", end="")
                 print(progress_message, end="")
@@ -551,16 +512,7 @@ if __name__ == "__main__":
                 im.save(store_path_webp, "webp", quality=webp)
                 os.remove(store_path)
             progress_bar += "."
-            progress_message = (
-                "\r"
-                + "[page "
-                + str(page_num + 1)
-                + " / ~"
-                + str(nb_pages)
-                + "] "
-                + progress_bar
-                + " "
-            )
+            progress_message = "\r" + "[page " + str(page_num + 1) + " / ~" + str(nb_pages) + "] " + progress_bar + " "
             # print(".", end="")
             print(progress_message, end="")
             sys.stdout.flush()
@@ -575,9 +527,7 @@ if __name__ == "__main__":
             if os.path.exists(save_path + ".zip"):
                 filler_txt += "_"
                 max_attempts = 20
-                while (
-                    os.path.exists(save_path + filler_txt + ".zip") and max_attempts > 0
-                ):
+                while os.path.exists(save_path + filler_txt + ".zip") and max_attempts > 0:
                     filler_txt += "_"
                     max_attempts -= 1
             shutil.make_archive(save_path + filler_txt, "zip", save_path)
@@ -586,10 +536,7 @@ if __name__ == "__main__":
             if os.path.exists(save_path + ".cbz"):
                 filler_txt2 += "_"
                 max_attempts = 20
-                while (
-                    os.path.exists(save_path + filler_txt2 + ".cbz")
-                    and max_attempts > 0
-                ):
+                while os.path.exists(save_path + filler_txt2 + ".cbz") and max_attempts > 0:
                     filler_txt2 += "_"
                     max_attempts -= 1
             os.rename(save_path + filler_txt + ".zip", save_path + filler_txt2 + ".cbz")
