@@ -11,6 +11,8 @@ DOWNLOADS/
 __pycache__/
 *.py[cod]
 *$py.class
+*.build/
+*.dist/
 
 # C extensions
 *.so
