@@ -3,9 +3,11 @@ DOWNLOADS/
 
 # Config file
 *.cfg
+.cache/
 
 # Dev folder
 .vscode/
+.history/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
