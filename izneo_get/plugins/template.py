@@ -6,6 +6,9 @@ from ..config import Config
 
 class Template(SiteProcessor):
     URL_PATTERNS = ["https://www.template.com/.*"]
+    url: str
+    config: Config
+    cache_file: str
 
     def __init__(self, url: str = ""):
         super().__init__(url)
@@ -13,7 +16,7 @@ class Template(SiteProcessor):
     def authenticate() -> None:
         ...
 
-    def download(self):
+    def download(self) -> str:
         ...
 
     def get_book_infos(self) -> BookInfos:

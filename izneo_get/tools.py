@@ -1,16 +1,20 @@
 # -*- coding: utf-8 -*-
 
+import asyncio
 import html
 import io
 import os
 import re
 import shutil
+import inquirer
 from urllib3.util import Retry
 import requests
 from requests import Session
 from requests.adapters import HTTPAdapter
 from PIL import Image
-from typing import Set
+from typing import Dict, Set
+
+from izneo_get.config import ImageFormat
 from .book_infos import BookInfos
 
 
@@ -62,7 +66,7 @@ def clean_attribute(attribute: str):
 def requests_retry_session(
     retries: int = 3,
     backoff_factor: int = 1,
-    status_forcelist: Set[int] = (500, 502, 504),
+    status_forcelist: Set[int] = {500, 502, 504},
     session: Session = None,
 ) -> Session:
     """Permet de gérer les cas simples de problèmes de connexions."""
@@ -78,6 +82,17 @@ def requests_retry_session(
     session.mount("http://", adapter)
     session.mount("https://", adapter)
     return session
+
+
+def http_get(url: str, session: Session = None, headers: Dict = None, **kwargs) -> requests.Response:
+    cookies = session.cookies if session else None
+    return requests_retry_session(session=session).get(
+        url, cookies=cookies, allow_redirects=True, headers=headers, **kwargs
+    )
+
+
+async def async_http_get(url: str, session: Session = None, headers: Dict = None, **kwargs) -> requests.Response:
+    return await asyncio.to_thread(http_get, url, session, headers, **kwargs)
 
 
 def check_version(version: str) -> str:
@@ -173,3 +188,39 @@ def get_unique_name(path: str):
     while os.path.exists(f"{path} ({i}){ext}"):
         i += 1
     return f"{path} ({i}){ext}"
+
+
+def convert_image(store_path: str, store_path_converted: str, format: str, image_quality: int = 100) -> str:
+    im = Image.open(store_path)
+    im.save(store_path_converted, format, quality=image_quality)
+    os.remove(store_path)
+    return store_path_converted
+
+
+def convert_image_if_needed(from_path: str, to_path: str, image_format: ImageFormat, image_quality: int = 100) -> str:
+    if image_format == ImageFormat.WEBP:
+        return convert_image(from_path, to_path, "webp", image_quality)
+    if image_format == ImageFormat.JPEG:
+        return convert_image(from_path, to_path, "jpeg", image_quality)
+    if image_format == ImageFormat.ORIGIN and os.path.exists(to_path) and from_path != to_path:
+        os.remove(to_path)
+    if from_path != to_path:
+        os.rename(from_path, to_path)
+    return to_path
+
+
+def question_yes_no(message: str, default: bool = True, carousel: bool = True) -> bool:
+    questions = [
+        inquirer.List(
+            "answer",
+            message=message,
+            choices=[
+                ("Yes", True),
+                ("No", False),
+            ],
+            default=default,
+            carousel=carousel,
+        )
+    ]
+    answer = inquirer.prompt(questions)
+    return answer["answer"]

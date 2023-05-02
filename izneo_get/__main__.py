@@ -101,6 +101,9 @@ def main():
         infos = processor.get_book_infos()
         print(infos)
         save_path = processor.download(forced_title)
+        if not save_path:
+            print("WARNING: Nothing was downloaded.")
+            return
         print("OK")
 
         # Si besoin, on crée une archive.
