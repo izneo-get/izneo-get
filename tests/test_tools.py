@@ -1,8 +1,13 @@
+import asyncio
 import os
+import shutil
+
+import inquirer
 from context import tools
 import pytest
 import re
 from context import book_infos
+from izneo_get.config import ImageFormat
 
 
 def test_strip_tags():
@@ -42,6 +47,26 @@ def test_requests_retry_session():
     assert response.status_code == 200
 
 
+def test_http_get():
+    response = tools.http_get("https://httpstat.us/200")
+    assert response.status_code == 200
+    response = tools.http_get("https://httpstat.us/401")
+    assert response.status_code == 401
+    with pytest.raises(tools.requests.exceptions.RetryError):
+        tools.http_get("https://httpstat.us/500")
+
+
+def test_async_http_get():
+    response = asyncio.run(tools.async_http_get("https://httpstat.us/200"))
+    assert response.status_code == 200
+
+
+def test_clean_attribute():
+    attribute = '&lt;p class="example"&gt;'
+    cleaned_attribute = tools.clean_attribute(attribute)
+    assert cleaned_attribute == "_p class=_example__"
+
+
 def test_check_version():
     version = tools.check_version("0.0.0")
     assert re.match(r"(\d+)\.(\d+)\.(\d+)", version)
@@ -78,12 +103,7 @@ def test_get_name_from_pattern():
 
 
 def test_get_unique_name():
-    if os.path.exists("tests/test.txt"):
-        os.remove("tests/test.txt")
-    for i in range(1, 8):
-        if os.path.exists(f"tests/test ({i}).txt"):
-            os.remove(f"tests/test ({i}).txt")
-
+    clean_test_files()
     assert tools.get_unique_name("tests/test.txt") == "tests/test.txt"
     with open("tests/test.txt", "w") as f:
         f.write("test")
@@ -91,3 +111,76 @@ def test_get_unique_name():
     with open("tests/test (1).txt", "w") as f:
         f.write("test")
     assert tools.get_unique_name("tests/test.txt") == "tests/test (2).txt"
+    clean_test_files()
+
+
+def clean_test_files():
+    for file in {
+        "tests/test.txt",
+        "tests/resources.cbz",
+        "tests/to_convert.jpeg",
+        "tests/to_convert.jpg",
+        "tests/to_convert.webp",
+    }:
+        if os.path.exists(file):
+            os.remove(file)
+    for i in range(1, 8):
+        if os.path.exists(f"tests/test ({i}).txt"):
+            os.remove(f"tests/test ({i}).txt")
+
+
+def test_create_cbz():
+    clean_test_files()
+    expected_path = "tests/resources.cbz"
+    cbz_path = tools.create_cbz("tests/resources")
+    assert cbz_path == expected_path
+    assert os.path.exists(cbz_path)
+    assert os.path.getsize(cbz_path) > 0
+    clean_test_files()
+
+
+def test_convert_image():
+    convert_from = "tests/to_convert.jpg"
+    for format in ["jpeg", "webp"]:
+        shutil.copyfile("tests/resources/image.jpeg", convert_from)
+        convert_to = f"tests/to_convert.{format}"
+        if os.path.exists(convert_to):
+            os.remove(convert_to)
+        ret = tools.convert_image(convert_from, convert_to, format, 100)
+        assert ret == convert_to
+        assert os.path.exists(convert_to)
+        assert os.path.getsize(convert_to) > 0
+        os.remove(convert_to)
+
+
+def test_convert_image_if_needed():
+    convert_from = "tests/to_convert.tmp"
+    for ext, format in [("jpeg", ImageFormat.JPEG), ("webp", ImageFormat.WEBP), ("jpeg", ImageFormat.ORIGIN)]:
+        shutil.copyfile("tests/resources/image.jpeg", convert_from)
+        convert_to = f"tests/to_convert.{ext}"
+        if os.path.exists(convert_to):
+            os.remove(convert_to)
+        ret = tools.convert_image_if_needed(convert_from, convert_to, format, 100)
+        assert ret == convert_to
+        assert os.path.exists(convert_to)
+        assert os.path.getsize(convert_to) > 0
+        assert not os.path.exists(convert_from)
+        os.remove(convert_to)
+
+    convert_from = convert_to = "tests/to_convert.jpeg"
+    shutil.copyfile("tests/resources/image.jpeg", convert_from)
+    file_size = os.path.getsize(convert_from)
+    ret = tools.convert_image_if_needed(convert_from, convert_to, ImageFormat.ORIGIN, 1)
+    assert ret == convert_to
+    assert os.path.exists(convert_to)
+    assert os.path.getsize(convert_to) == file_size
+    os.remove(convert_to)
+
+
+def test_question_yes_no(monkeypatch):
+    monkeypatch.setattr(inquirer, "prompt", lambda _: {"answer": True})
+    assert tools.question_yes_no("question") == True
+
+
+if __name__ == "__main__":
+    test_convert_image_if_needed()
