@@ -1,7 +1,10 @@
 from enum import Enum
+import os
 import inquirer
 import re
 from typing import Callable
+
+from izneo_get import tools
 
 try:
     from config import Config, ImageFormat, OutputFormat
@@ -20,6 +23,7 @@ class MenuItem(Enum):
     USER_AGENT = 7
     CONTINUE_FROM_EXISTING = 8
     AUTHENTICATION_FROM_CACHE = 9
+    SAVE_CONFIG = 10
 
 
 digit_validation = lambda _, x: re.match(r"^\d*$", x) is not None
@@ -27,9 +31,11 @@ digit_validation = lambda _, x: re.match(r"^\d*$", x) is not None
 
 class ConfigQuery:
     config: Config
+    save_config_as: str
 
-    def __init__(self, config: Config):
+    def __init__(self, config: Config, save_config_as: str = "config.cfg"):
         self.config = config
+        self.save_config_as = save_config_as
 
     def update_config_by_command(self) -> Config:
         choice: MenuItem = None
@@ -54,6 +60,7 @@ class ConfigQuery:
                             f"Authentication from cache: {self.config.authentication_from_cache}",
                             MenuItem.AUTHENTICATION_FROM_CACHE,
                         ),
+                        ("Save this config as default", MenuItem.SAVE_CONFIG),
                         (">> DONE <<", MenuItem.QUIT),
                     ],
                     carousel=True,
@@ -78,6 +85,7 @@ class ConfigQuery:
             MenuItem.USER_AGENT: self.update_item_user_agent,
             MenuItem.CONTINUE_FROM_EXISTING: self.update_item_continue_from_existing,
             MenuItem.AUTHENTICATION_FROM_CACHE: self.update_item_authentication_from_cache,
+            MenuItem.SAVE_CONFIG: self.update_item_save_config,
             MenuItem.QUIT: self.update_item_quit,
         }
         actions[item]()
@@ -162,6 +170,14 @@ class ConfigQuery:
         ]
         answer = inquirer.prompt(questions)
         self.config.authentication_from_cache = answer["authentication_from_cache"]
+
+    def update_item_save_config(self):
+        if os.path.exists(self.save_config_as) and not tools.question_yes_no(
+            "Config file already exists. Do you want to overwrite it?",
+            default=False,
+        ):
+            return
+        self.config.save_config(self.save_config_as)
 
     def update_item_quit(self):
         pass

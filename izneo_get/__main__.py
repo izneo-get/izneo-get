@@ -56,7 +56,7 @@ import re
 import os
 import sys
 import shutil
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 from .config_from_args import get_args
 from .tools import check_version, requests_retry_session, clean_name, create_cbz
 from .plugins.izneo import Izneo  # Force import for PyInstaller
@@ -69,26 +69,25 @@ from argparse import Namespace
 CONFIG_FILE = "izneo_get.cfg"
 
 
-def get_config(args: Namespace) -> Config:
-    if args.config:
-        if not os.path.exists(args.config):
-            print(f'Le fichier de configuration "{args.config}" n\'existe pas.')
+def get_config(args_config: Config, config_file: Optional[str]) -> Config:
+    if config_file:
+        if not os.path.exists(config_file):
+            print(f'Le fichier de configuration "{config_file}" n\'existe pas.')
             sys.exit(1)
-        return get_config_from_file(args.config, args)
-    return get_config_from_file(CONFIG_FILE if os.path.exists(CONFIG_FILE) else "", args)
+        return get_config_from_file(config_file, args_config)
+    return get_config_from_file(CONFIG_FILE if os.path.exists(CONFIG_FILE) else "", args_config)
 
 
 def main():
     # Vérification que c'est la dernière version.
     check_version(__version__)
 
-    args = get_args()
-    config = get_config(args)
-    if not args.url:
-        config_query = ConfigQuery(config)
+    args_config, url, config_file = get_args()
+    config = get_config(args_config, config_file)
+    if not url:
+        config_query = ConfigQuery(config, CONFIG_FILE)
         config = config_query.update_config_by_command()
 
-    url = args.url
     while not url:
         url = input("URL: ")
 

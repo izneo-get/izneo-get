@@ -1,6 +1,8 @@
 import argparse
 from argparse import Namespace
 
+from izneo_get.config import Config, ImageFormat, OutputFormat
+
 
 def get_args() -> Namespace:
     # Parse des arguments passés en ligne de commande.
@@ -62,6 +64,13 @@ def get_args() -> Namespace:
         default=None,
         help="Pour éviter de télécharger un fichier déjà existant",
     )
+    parser.add_argument(
+        "--ignore-cache",
+        action="store_true",
+        dest="ignore_cache",
+        default=None,
+        help="Pour ne pas utiliser le cache de session",
+    )
     # parser.add_argument(
     #     "--from-page",
     #     type=int,
@@ -104,4 +113,16 @@ def get_args() -> Namespace:
     #     default=None,
     #     help="L'encoding du fichier d'entrée de liste d'URLs (ex : \"utf-8\")",
     # )
-    return parser.parse_args()
+    parsed = parser.parse_args()
+    config = Config(
+        output_folder=parsed.output_folder,
+        output_filename=parsed.output_filename,
+        image_format=ImageFormat.from_str(parsed.image_format),
+        image_quality=parsed.image_quality,
+        output_format=OutputFormat.from_str(parsed.output_format),
+        pause_sec=parsed.pause,
+        user_agent=parsed.user_agent,
+        continue_from_existing=parsed.continue_from_existing,
+        authentication_from_cache=False if parsed.ignore_cache == True else None,
+    )
+    return config, parsed.url, parsed.config
