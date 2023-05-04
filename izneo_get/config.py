@@ -61,6 +61,8 @@ class Config:
 
     def to_dict(self):
         value: Dict[str, Any] = {key: str(val) for key, val in self.__dict__.items() if val is not None}
+        value["image_format"] = self.image_format.value
+        value["output_format"] = self.output_format.value
         return value
 
     def save_config(self, path: str) -> None:

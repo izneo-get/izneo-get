@@ -2,11 +2,12 @@ import configparser
 import re
 import os
 import sys
+from typing import Optional
 from .config import Config, ImageFormat, OutputFormat
 from argparse import Namespace
 
 
-def get_config_from_file(config_file: str, args_config: Config) -> Config:
+def get_config_from_file(config_file: str, args_config: Optional[Config] = None) -> Config:
     default_config = Config()
     # Lecture de la config.
     config = configparser.RawConfigParser()
@@ -28,37 +29,64 @@ def get_config_from_file(config_file: str, args_config: Config) -> Config:
         config,
         "output_folder",
         default_config.output_folder,
-        args_config.output_folder,
+        args_config.output_folder if args_config else None,
     )
 
     output_filename = get_param_or_default(
-        config, "output_filename", default_config.output_filename, args_config.output_filename
+        config, "output_filename", default_config.output_filename, args_config.output_filename if args_config else None
     )
     image_format = get_param_or_default(
         config,
         "image_format",
-        str(default_config.image_format).split(".")[-1],
-        args_config.image_format.value if args_config.image_format else None,
+        default_config.image_format.value,
+        args_config.image_format.value if args_config and args_config.image_format else None,
     )
-    image_format = ImageFormat.from_str(image_format)
+    image_format = ImageFormat.from_str(image_format) or default_config.image_format
+
     image_quality = int(
-        get_param_or_default(config, "image_quality", default_config.image_quality, args_config.image_quality)
+        get_param_or_default(
+            config, "image_quality", default_config.image_quality, args_config.image_quality if args_config else None
+        )
     )
     output_format = get_param_or_default(
         config,
         "output_format",
-        str(default_config.output_format).split(".")[-1],
-        args_config.output_format.value if args_config.output_format else None,
+        default_config.output_format.value,
+        args_config.output_format.value if args_config and args_config.output_format else None,
     )
-    output_format = OutputFormat.from_str(output_format)
-    pause_sec = int(get_param_or_default(config, "pause", default_config.pause_sec, args_config.pause_sec))
-    user_agent = get_param_or_default(config, "user_agent", default_config.user_agent, args_config.user_agent)
+    output_format = OutputFormat.from_str(output_format) or default_config.output_format
+    pause_sec = int(
+        get_param_or_default(
+            config, "pause_sec", default_config.pause_sec, args_config.pause_sec if args_config else None
+        )
+    )
+    user_agent = get_param_or_default(
+        config, "user_agent", default_config.user_agent, args_config.user_agent if args_config else None
+    )
     continue_from_existing = get_param_or_default(
-        config, "continue_from_existing", default_config.continue_from_existing, args_config.continue_from_existing
+        config,
+        "continue_from_existing",
+        default_config.continue_from_existing,
+        args_config.continue_from_existing if args_config else None,
     )
+    continue_from_existing = str(continue_from_existing).lower() in {
+        "true",
+        "1",
+        "yes",
+        "y",
+    }
     authentication_from_cache = get_param_or_default(
-        config, "authentication_from_cache", default_config.authentication_from_cache
+        config,
+        "authentication_from_cache",
+        default_config.authentication_from_cache,
+        args_config.authentication_from_cache if args_config else None,
     )
+    authentication_from_cache = str(authentication_from_cache).lower() in {
+        "true",
+        "1",
+        "yes",
+        "y",
+    }
 
     # session_id = get_param_or_default(config, "session_id", "", args_config.session_id)
     # nb_page_limit = args_config.limit
