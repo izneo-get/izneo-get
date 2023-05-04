@@ -76,7 +76,7 @@ def test_get_args_output_filename(monkeypatch):
 def test_get_args_image_format(monkeypatch):
     for arg_value, value in {
         "webp": ImageFormat.WEBP,
-        "jpg": ImageFormat.JPEG,
+        "jpeg": ImageFormat.JPEG,
         "origin": ImageFormat.ORIGIN,
     }.items():
         args = ["izneo_get.py", "--image-format", arg_value]
@@ -220,4 +220,4 @@ def test_get_args_multiple(monkeypatch):
 
 
 if __name__ == "__main__":
-    test_get_args_output_folder()
+    ...
