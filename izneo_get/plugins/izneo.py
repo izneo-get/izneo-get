@@ -1,11 +1,7 @@
-from typing import Dict, List
+from typing import Dict, List, Optional
 import requests
 import re
 import os
-import sys
-import html
-import time
-from PIL import Image
 import json
 from Crypto.Cipher import AES
 import base64
@@ -38,15 +34,15 @@ class Izneo(SiteProcessor):
     config: Config
     cache_file: str = "izneo.cache"
 
-    session: requests.Session = None
-    headers: dict = {}
+    session: Optional[requests.Session] = None
+    headers: Dict[str, str] = {}
     root_path = "https://www.izneo.com/"
 
-    __book_infos: BookInfos = None
-    __sign: str = None
-    __book_id: str = None
+    __book_infos: Optional[BookInfos] = None
+    __sign: Optional[str] = None
+    __book_id: Optional[str] = None
 
-    def __init__(self, url: str = "", config: Config = None):
+    def __init__(self, url: str = "", config: Optional[Config] = None) -> None:
         super().__init__(url=url, config=config)
         self.url = self.__clean_url(self.url)
 
@@ -101,13 +97,11 @@ class Izneo(SiteProcessor):
         )
         self.session.cookies.set_cookie(cookie_obj)
 
-    def download(self, forced_title: str = None) -> str:
+    def download(self, forced_title: Optional[str] = None) -> str:
         print(f"URL: {self.url}")
-        book_id = self.__get_book_id()
         book_infos = self.get_book_infos()
-        sign = self.__get_signature()
 
-        if book_infos.custom_fields["state"] == "preview":
+        if book_infos.custom_fields and book_infos.custom_fields["state"] == "preview":
             print(f"WARNING: with your credentials, only preview is available ({book_infos.pages} pages).")
             answer = question_yes_no("Continue anyway", default=False)
             if answer == False:
@@ -140,7 +134,7 @@ class Izneo(SiteProcessor):
             and os.path.exists(f"{save_path}.cbz")
         ):
             print(f'"{save_path}.cbz" already exists, skipping.')
-            return f"{save_path}.cbz"
+            return ""
         self.__create_destination_folder(save_path)
 
         files_downloaded: List[str] = []
@@ -148,12 +142,16 @@ class Izneo(SiteProcessor):
             files_downloaded = self.__download_all_pages(title_used, save_path)
         else:
             files_downloaded = asyncio.run(self.__async_download_all_pages(title_used, save_path))
-        return save_path, files_downloaded
+        print(f"{len(files_downloaded)} pages downloaded")
+        return save_path
 
     async def __async_download_page(self, page_num: int, title_used: str, save_path: str, pause_sec: int = 0) -> str:
         book_id = self.__get_book_id()
         sign = self.__get_signature()
         book_infos = self.get_book_infos()
+        if not book_infos.custom_fields or not book_infos.custom_fields["pages"]:
+            print("ERROR: Can't find pages in book infos.")
+            return ""
 
         nb_digits = max(3, len(str(len(book_infos.custom_fields["pages"]))))
         url = f"https://www.izneo.com/book/{book_id}/{page_num}?type=full" + (f"&{sign}" if sign else "")
@@ -197,18 +195,23 @@ class Izneo(SiteProcessor):
             store_path_converted = f"{save_path}/{title_used} {page_txt}.{image_format}"
 
         # Convert image if needed.
-        convert_image_if_needed(store_path, store_path_converted, self.config.image_format, self.config.image_quality)
+        if self.config.image_format:
+            convert_image_if_needed(
+                store_path, store_path_converted, self.config.image_format, self.config.image_quality
+            )
         if pause_sec:
             await asyncio.sleep(pause_sec)
         return store_path_converted
 
     @staticmethod
-    def uncrypt_image(crypted_content: bytes, key, iv) -> bytes:
+    def uncrypt_image(crypted_content: bytes, key: str, iv: str) -> bytes:
         aes = AES.new(base64.b64decode(key), AES.MODE_CBC, base64.b64decode(iv))
         return aes.decrypt(crypted_content)
 
-    async def __async_download_all_pages(self, title_used: str, save_path: str) -> None:
+    async def __async_download_all_pages(self, title_used: str, save_path: str) -> List[str]:
         book_infos = self.get_book_infos()
+        if not book_infos.custom_fields or not book_infos.custom_fields["pages"]:
+            return []
         return await tqdm.gather(
             *[
                 self.__async_download_page(page, title_used, save_path)
@@ -218,9 +221,11 @@ class Izneo(SiteProcessor):
             bar_format=BAR_FORMAT,
         )
 
-    def __download_all_pages(self, title_used: str, save_path: str) -> None:
+    def __download_all_pages(self, title_used: str, save_path: str) -> List[str]:
         book_infos = self.get_book_infos()
-        downloaded_pages = []
+        downloaded_pages: List[str] = []
+        if not book_infos.custom_fields or not book_infos.custom_fields["pages"]:
+            return downloaded_pages
         for page in tqdm(
             range(len(book_infos.custom_fields["pages"])),
             desc="Download pages",
@@ -230,13 +235,15 @@ class Izneo(SiteProcessor):
             downloaded_pages.append(res)
         return downloaded_pages
 
-    def __create_destination_folder(self, save_path):
+    def __create_destination_folder(self, save_path: str) -> None:
         if not os.path.exists(save_path):
             os.mkdir(save_path)
         print(f"Destination : {save_path}")
 
-    def __get_title_to_use(self, book_infos):
-        return get_name_from_pattern(self.config.output_filename, book_infos) or self.get_default_title(book_infos)
+    def __get_title_to_use(self, book_infos: BookInfos) -> str:
+        return get_name_from_pattern(self.config.output_filename or "", book_infos) or self.get_default_title(
+            book_infos
+        )
 
     def get_book_infos(self) -> BookInfos:
         if self.__book_infos:
@@ -273,7 +280,7 @@ class Izneo(SiteProcessor):
         )
         return json.loads(r.text)["data"]
 
-    def __get_book_id(self) -> int:
+    def __get_book_id(self) -> str:
         if self.__book_id:
             return self.__book_id
         book_id = ""
@@ -298,12 +305,12 @@ class Izneo(SiteProcessor):
         if self.__sign is not None:
             return self.__sign
         sign = ""
-        if re.match("(.+)login=cvs&sign=([^&]*)", self.url):
-            sign = re.match("(.+)login=cvs&sign=([^&]*)", self.url)[2]
+        if res := re.match("(.+)login=cvs&sign=([^&]*)", self.url):
+            sign = res[2]
             sign = f"login=cvs&sign={sign}"
         self.__sign = sign
         return self.__sign
 
 
-def init(url: str = "", config: Config = None) -> Izneo:
+def init(url: str = "", config: Optional[Config] = None) -> Izneo:
     return Izneo(url, config)

@@ -46,23 +46,23 @@ class OutputFormat(Enum):
 
 @dataclass
 class Config:
-    output_folder: str = "DOWNLOADS"
-    output_filename: str = "{title} - {volume}. {subtitle}"
-    image_format: ImageFormat = ImageFormat.ORIGIN
-    image_quality: int = 100
-    output_format: OutputFormat = OutputFormat.BOTH
-    pause_sec: int = 1
-    user_agent: str = (
-        "Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36"
-    )
-    continue_from_existing: bool = False
-    authentication_from_cache: bool = True
-    cache_folder: str = ".cache"
+    output_folder: Optional[str] = "DOWNLOADS"
+    output_filename: Optional[str] = "{title} - {volume}. {subtitle}"
+    image_format: Optional[ImageFormat] = ImageFormat.ORIGIN
+    image_quality: Optional[int] = 100
+    output_format: Optional[OutputFormat] = OutputFormat.BOTH
+    pause_sec: Optional[int] = 1
+    user_agent: Optional[
+        str
+    ] = "Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36"
+    continue_from_existing: Optional[bool] = False
+    authentication_from_cache: Optional[bool] = True
+    cache_folder: Optional[str] = ".cache"
 
     def to_dict(self):
         value: Dict[str, Any] = {key: str(val) for key, val in self.__dict__.items() if val is not None}
-        value["image_format"] = self.image_format.value
-        value["output_format"] = self.output_format.value
+        value["image_format"] = self.image_format.value if self.image_format else None
+        value["output_format"] = self.output_format.value if self.output_format else None
         return value
 
     def save_config(self, path: str) -> None:

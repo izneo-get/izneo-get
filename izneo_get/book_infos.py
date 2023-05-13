@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum
-from typing import Dict
+from typing import Any, Dict, Optional
 
 
 class ReadDirection(Enum):
@@ -24,7 +24,7 @@ class BookInfos:
     description: str = ""
     publisher: str = ""
     read_direction: ReadDirection = ReadDirection.LTOR
-    custom_fields: Dict = None
+    custom_fields: Optional[Dict[str, Any]] = None
 
     def __str__(self) -> str:
         ignore_attrs = {"custom_fields", "description", "read_direction"}
