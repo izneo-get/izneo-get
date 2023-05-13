@@ -12,7 +12,7 @@ import requests
 from requests import Session
 from requests.adapters import HTTPAdapter
 from PIL import Image
-from typing import Dict, Set
+from typing import Any, Dict, Optional, Set
 
 from izneo_get.config import ImageFormat
 from .book_infos import BookInfos
@@ -66,10 +66,12 @@ def clean_attribute(attribute: str):
 def requests_retry_session(
     retries: int = 3,
     backoff_factor: int = 1,
-    status_forcelist: Set[int] = {500, 502, 504},
-    session: Session = None,
+    status_forcelist: Optional[Set[int]] = None,
+    session: Optional[Session] = None,
 ) -> Session:
     """Permet de gérer les cas simples de problèmes de connexions."""
+    if status_forcelist is None:
+        status_forcelist = {500, 502, 504}
     session = session or Session()
     retry = Retry(
         total=retries,
@@ -84,14 +86,18 @@ def requests_retry_session(
     return session
 
 
-def http_get(url: str, session: Session = None, headers: Dict = None, **kwargs) -> requests.Response:
+def http_get(
+    url: str, session: Optional[Session] = None, headers: Optional[Dict[str, str]] = None, **kwargs: Optional[Any]
+) -> requests.Response:
     cookies = session.cookies if session else None
     return requests_retry_session(session=session).get(
         url, cookies=cookies, allow_redirects=True, headers=headers, **kwargs
     )
 
 
-async def async_http_get(url: str, session: Session = None, headers: Dict = None, **kwargs) -> requests.Response:
+async def async_http_get(
+    url: str, session: Optional[Session] = None, headers: Optional[Dict[str, str]] = None, **kwargs: Optional[Any]
+) -> requests.Response:
     return await asyncio.to_thread(http_get, url, session, headers, **kwargs)
 
 
@@ -114,7 +120,7 @@ def check_version(version: str) -> str:
 
 def get_image_type(image_bytes: bytes) -> str:
     image = Image.open(io.BytesIO(image_bytes))
-    return image.format.lower()
+    return image.format.lower() if image.format else ""
 
 
 def get_name_from_pattern(pattern: str, infos: BookInfos) -> str:
@@ -197,7 +203,11 @@ def convert_image(store_path: str, store_path_converted: str, format: str, image
     return store_path_converted
 
 
-def convert_image_if_needed(from_path: str, to_path: str, image_format: ImageFormat, image_quality: int = 100) -> str:
+def convert_image_if_needed(
+    from_path: str, to_path: str, image_format: ImageFormat, image_quality: Optional[int] = None
+) -> str:
+    if not image_quality:
+        image_quality = 100
     if image_format == ImageFormat.WEBP:
         return convert_image(from_path, to_path, "webp", image_quality)
     if image_format == ImageFormat.JPEG:
@@ -222,5 +232,5 @@ def question_yes_no(message: str, default: bool = True, carousel: bool = True) -
             carousel=carousel,
         )
     ]
-    answer = inquirer.prompt(questions)
+    answer: Dict[str, bool] = inquirer.prompt(questions)
     return answer["answer"]

@@ -1,9 +1,9 @@
 import os
 import re
-from typing import List
+from typing import List, Optional
 from ..config import Config
 from ..book_infos import BookInfos
-from ..tools import requests_retry_session, clean_name, get_image_type, get_name_from_pattern, clean_attribute
+from ..tools import clean_name, get_name_from_pattern
 
 
 class SiteProcessor:
@@ -12,7 +12,7 @@ class SiteProcessor:
     config: Config
     cache_file: str
 
-    def __init__(self, url: str = "", config: Config = None) -> None:
+    def __init__(self, url: str = "", config: Optional[Config] = None) -> None:
         self.url = url
         self.config = config or Config()
 
@@ -20,17 +20,19 @@ class SiteProcessor:
     def is_valid_url(url: str) -> bool:
         return any(re.match(pattern, url) is not None for pattern in SiteProcessor.URL_PATTERNS)
 
-    def authenticate() -> None:
+    def authenticate(self) -> None:
         ...
 
-    def download(self) -> str:
+    def download(self, forced_title: Optional[str] = None) -> str:
         ...
 
     def get_book_infos(self) -> BookInfos:
         ...
 
-    def create_output_folder(self, book_infos: BookInfos, output_folder: str = "DOWNLOADS") -> str:
-        output_folder = get_name_from_pattern(self.config.output_folder, book_infos)
+    def create_output_folder(self, book_infos: BookInfos, output_folder: Optional[str]) -> str:
+        if not output_folder:
+            output_folder = "DOWNLOADS"
+        output_folder = get_name_from_pattern(output_folder, book_infos)
         output_folder = clean_name(output_folder, directory=True)
         os.makedirs(output_folder, exist_ok=True)
         return output_folder
@@ -48,5 +50,5 @@ class SiteProcessor:
         return title_used
 
 
-def init(url: str = "", config: Config = None) -> SiteProcessor:
+def init(url: str = "", config: Optional[Config] = None) -> SiteProcessor:
     return SiteProcessor(url, config)

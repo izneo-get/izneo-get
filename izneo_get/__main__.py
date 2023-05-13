@@ -58,13 +58,13 @@ import sys
 import shutil
 from typing import List, Optional, Tuple
 from .config_from_args import get_args
-from .tools import check_version, requests_retry_session, clean_name, create_cbz
-from .plugins.izneo import Izneo  # Force import for PyInstaller
+from .tools import check_version, create_cbz
 from .plugins.site_processor import SiteProcessor
 from .config import Config, OutputFormat
 from .config_from_query import ConfigQuery
 from .config_from_file import get_config_from_file
-from argparse import Namespace
+
+# from .plugins.izneo import Izneo  # Force import for PyInstaller
 
 CONFIG_FILE = "izneo_get.cfg"
 
@@ -72,13 +72,13 @@ CONFIG_FILE = "izneo_get.cfg"
 def get_config(args_config: Config, config_file: Optional[str]) -> Config:
     if config_file:
         if not os.path.exists(config_file):
-            print(f'Le fichier de configuration "{config_file}" n\'existe pas.')
+            print(f'Configuration file "{config_file}" doesn\'t exist.')
             sys.exit(1)
         return get_config_from_file(config_file, args_config)
     return get_config_from_file(CONFIG_FILE if os.path.exists(CONFIG_FILE) else "", args_config)
 
 
-def main():
+def main() -> None:
     # Vérification que c'est la dernière version.
     check_version(__version__)
 
@@ -96,6 +96,8 @@ def main():
 
     for url, forced_title in url_list:
         processor = get_site_processor(url=url, config=config)
+        if not processor:
+            continue
         processor.authenticate()
         infos = processor.get_book_infos()
         print(infos)
@@ -120,12 +122,12 @@ def main():
     print("Done!")
 
 
-def get_all_urls(url) -> List[Tuple[str, str]]:
+def get_all_urls(url: str) -> List[Tuple[str, str]]:
     return get_urls_from_file(url) if os.path.exists(url) else [(url, "")]
 
 
-def get_urls_from_file(url, encoding="utf-8"):
-    url_list = []
+def get_urls_from_file(url: str, encoding: str = "utf-8") -> List[tuple[str, str]]:
+    url_list: List[tuple[str, str]] = []
     with open(url, "r", encoding=encoding) as f:
         lines = f.readlines()
     next_forced_title = ""
@@ -139,12 +141,12 @@ def get_urls_from_file(url, encoding="utf-8"):
         if res:
             next_forced_title = res
         if line and line[0] != "#":
-            url_list.append([line, next_forced_title])
+            url_list.append((line, next_forced_title))
             next_forced_title = ""
     return url_list
 
 
-def get_site_processor(url: str, config: Config) -> SiteProcessor:
+def get_site_processor(url: str, config: Config) -> Optional[SiteProcessor]:
     parser = None
     # Load all modules in the plugin directory.
     for module in os.listdir(f"{os.path.dirname(__file__)}/plugins"):

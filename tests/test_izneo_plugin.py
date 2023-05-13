@@ -3,6 +3,7 @@ import asyncio
 import os
 import shutil
 import sys
+from typing import List
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
@@ -19,7 +20,7 @@ def test_is_valid_url():
 
 
 def test_clean_url():
-    processor = Izneo()
+    processor: Izneo = Izneo()
     url = "https://reader.izneo.com/read/123456789"
     expected_url = "https://reader.izneo.com/read/123456789"
     assert processor._Izneo__clean_url(url) == expected_url
@@ -42,11 +43,11 @@ def test_download():
 def test_async_download_page():
     output_path = "tests/output"
     clean_output(output_path)
-    url = "https://www.izneo.com/fr/webtoon/shojo/moi-apprentie-deesse-44901/episode-0-97863/read/1?exiturl=https://www.izneo.com/fr/webtoon/shojo/moi-apprentie-deesse-44901"
+    url = "https://www.izneo.com/fr/bd/humour/asterix-5841/asterix-asterix-le-gaulois-n-1-4707"
     processor = Izneo(url)
     # processor.__init_session("123456")
     title = "test"
-    res = asyncio.run(processor._Izneo__async_download_page(0, title, output_path))
+    res: str = asyncio.run(processor._Izneo__async_download_page(0, title, output_path))
     assert res == "tests/output/test 001.jpeg"
     assert os.path.exists(res)
     assert os.path.isfile(res)
@@ -57,13 +58,13 @@ def test_async_download_page():
 def test_async_download_all_pages():
     output_path = "tests/output"
     clean_output(output_path)
-    url = "https://www.izneo.com/fr/webtoon/shojo/moi-apprentie-deesse-44901/episode-0-97863/read/1?exiturl=https://www.izneo.com/fr/webtoon/shojo/moi-apprentie-deesse-44901"
+    url = "https://www.izneo.com/fr/bd/humour/asterix-5841/asterix-asterix-le-gaulois-n-1-4707"
     processor = Izneo(url)
     processor.get_book_infos()
     processor._Izneo__book_infos.custom_fields["pages"] = processor._Izneo__book_infos.custom_fields["pages"][:2]
     # processor.__init_session("123456")
     title = "test"
-    res = asyncio.run(processor._Izneo__async_download_all_pages(title, output_path))
+    res: str = asyncio.run(processor._Izneo__async_download_all_pages(title, output_path))
     assert len(res) == 2
     assert res[0] == "tests/output/test 001.jpeg"
     assert os.path.exists(res[0])
@@ -75,13 +76,13 @@ def test_async_download_all_pages():
 def test_download_all_pages():
     output_path = "tests/output"
     clean_output(output_path)
-    url = "https://www.izneo.com/fr/webtoon/shojo/moi-apprentie-deesse-44901/episode-0-97863/read/1?exiturl=https://www.izneo.com/fr/webtoon/shojo/moi-apprentie-deesse-44901"
+    url = "https://www.izneo.com/fr/bd/humour/asterix-5841/asterix-asterix-le-gaulois-n-1-4707"
     processor = Izneo(url)
     processor.get_book_infos()
     processor._Izneo__book_infos.custom_fields["pages"] = processor._Izneo__book_infos.custom_fields["pages"][:2]
     # processor.__init_session("123456")
     title = "test"
-    res = processor._Izneo__download_all_pages(title, output_path)
+    res: List[str] = processor._Izneo__download_all_pages(title, output_path)
     assert len(res) == 2
     assert res[0] == "tests/output/test 001.jpeg"
     assert os.path.exists(res[0])
@@ -109,24 +110,24 @@ def clean_output(output_path):
 
 
 def test_get_book_infos():
-    url = "https://www.izneo.com/fr/webtoon/shojo/moi-apprentie-deesse-44901/episode-0-97863/read/1?exiturl=https://www.izneo.com/fr/webtoon/shojo/moi-apprentie-deesse-44901"
+    url = "https://www.izneo.com/fr/bd/humour/asterix-5841/asterix-asterix-le-gaulois-n-1-4707"
     processor = Izneo(url)
     infos: BookInfos = processor.get_book_infos()
-    assert infos.title == "Moi, apprentie déesse !"
-    assert infos.pages == 20
-    assert infos.subtitle == "Episode 0"
-    assert infos.chapter == "0"
+    assert infos.title == "Astérix"
+    assert infos.pages == 13
+    assert infos.subtitle == "Astérix - Astérix le Gaulois - n°1"
+    assert infos.volume == "1"
 
 
 def test_download_book_infos():
-    url = "https://www.izneo.com/fr/webtoon/shojo/moi-apprentie-deesse-44901/episode-0-97863/read/1?exiturl=https://www.izneo.com/fr/webtoon/shojo/moi-apprentie-deesse-44901"
+    url = "https://www.izneo.com/fr/bd/humour/asterix-5841/asterix-asterix-le-gaulois-n-1-4707"
     processor = Izneo(url)
     # processor.__init_session("123456")
     infos = processor._Izneo__download_book_infos()
-    assert infos["title"] == "Moi, apprentie déesse !"
-    assert infos["nbPage"] == 20
-    assert infos["subtitle"] == "Episode 0"
-    assert infos["chapter"] == "0"
+    assert infos["title"] == "Astérix"
+    assert infos["nbPage"] == 13
+    assert infos["subtitle"] == "Astérix - Astérix le Gaulois - n°1"
+    assert infos["volume"] == "1"
 
 
 def test_get_book_id():

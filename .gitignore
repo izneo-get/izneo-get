@@ -8,6 +8,7 @@ DOWNLOADS/
 # Dev folder
 .vscode/
 .history/
+typings/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -1,5 +1,5 @@
+from typing import Optional
 from .site_processor import SiteProcessor
-import re
 from ..book_infos import BookInfos
 from ..config import Config
 
@@ -10,18 +10,18 @@ class Template(SiteProcessor):
     config: Config
     cache_file: str
 
-    def __init__(self, url: str = ""):
-        super().__init__(url)
+    def __init__(self, url: str = "", config: Optional[Config] = None):
+        super().__init__(url, config)
 
-    def authenticate() -> None:
+    def authenticate(self) -> None:
         ...
 
-    def download(self) -> str:
+    def download(self, forced_title: Optional[str] = None) -> str:
         ...
 
     def get_book_infos(self) -> BookInfos:
         ...
 
 
-def init(url: str = "", config: Config = None) -> Template:
+def init(url: str = "", config: Optional[Config] = None) -> Template:
     return Template(url, config)
