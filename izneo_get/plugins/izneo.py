@@ -38,13 +38,13 @@ class Izneo(SiteProcessor):
     headers: Dict[str, str] = {}
     root_path = "https://www.izneo.com/"
 
-    __book_infos: Optional[BookInfos] = None
-    __sign: Optional[str] = None
-    __book_id: Optional[str] = None
+    _book_infos: Optional[BookInfos] = None
+    _sign: Optional[str] = None
+    _book_id: Optional[str] = None
 
     def __init__(self, url: str = "", config: Optional[Config] = None) -> None:
         super().__init__(url=url, config=config)
-        self.url = self.__clean_url(self.url)
+        self.url = self._clean_url(self.url)
 
     @staticmethod
     def is_valid_url(url: str) -> bool:
@@ -52,34 +52,35 @@ class Izneo(SiteProcessor):
 
     def authenticate(self) -> None:
         if self.config.authentication_from_cache:
-            session_id = self.__authenticate_from_cache()
+            session_id = self._authenticate_from_cache()
         else:
-            session_id = self.__authenticate_from_prompt()
-        self.__init_session(session_id)
+            session_id = self._authenticate_from_prompt()
+        self._init_session(session_id)
 
-    def __authenticate_from_prompt(self) -> str:
+    def _authenticate_from_prompt(self) -> str:
         session_id = ""
         while not session_id:
             session_id = input('Session ID (value of cookie named "c03aab1711dbd2a02ea11200dde3e3d1"): ')
-        self.__save_cache(session_id)
+        self._save_cache(session_id)
         return session_id
 
-    def __authenticate_from_cache(self) -> str:
+    def _authenticate_from_cache(self) -> str:
         session_id = None
         cache_file = f"{self.config.cache_folder}/{self.cache_file}"
         if os.path.exists(cache_file):
             with open(cache_file, "r") as f:
                 session_id = f.read()
             return session_id
-        return self.__authenticate_from_prompt()
+        return self._authenticate_from_prompt()
 
-    def __save_cache(self, session_id: str) -> None:
-        os.makedirs(self.config.cache_folder, exist_ok=True)
-        cache_file = f"{self.config.cache_folder}/{self.cache_file}"
+    def _save_cache(self, session_id: str) -> None:
+        cache_folder = self.config.cache_folder or "."
+        os.makedirs(cache_folder, exist_ok=True)
+        cache_file = f"{cache_folder}/{self.cache_file}"
         with open(cache_file, "w") as f:
             f.write(session_id)
 
-    def __clean_url(self, url: str) -> str:
+    def _clean_url(self, url: str) -> str:
         if res := re.search(r"exiturl=(.+?)\&", url):
             replace_from = res[1]
             replace_to = urllib.parse.quote_plus(replace_from)
@@ -87,7 +88,12 @@ class Izneo(SiteProcessor):
             url = url.replace("%25", "%")
         return url
 
-    def __init_session(self, session_id: str) -> None:
+    def _init_session(self, session_id: str) -> None:
+        """Create session with cookie corresponding to your account session.
+
+        Args:
+            session_id (str): value found in the cookie named "c03aab1711dbd2a02ea11200dde3e3d1".
+        """
         # Create session and cookie.
         self.session = requests.Session()
         cookie_obj = requests.cookies.create_cookie(domain=".izneo.com", name="lang", value="fr")
@@ -115,7 +121,7 @@ class Izneo(SiteProcessor):
         # Création du répertoire de destination.
         output_folder = self.create_output_folder(book_infos, self.config.output_folder)
 
-        title_used = self.__get_title_to_use(book_infos)
+        title_used = self._get_title_to_use(book_infos)
 
         if forced_title:
             forced_title = get_name_from_pattern(forced_title, book_infos)
@@ -135,19 +141,19 @@ class Izneo(SiteProcessor):
         ):
             print(f'"{save_path}.cbz" already exists, skipping.')
             return ""
-        self.__create_destination_folder(save_path)
+        self._create_destination_folder(save_path)
 
         files_downloaded: List[str] = []
         if self.config.pause_sec:
-            files_downloaded = self.__download_all_pages(title_used, save_path)
+            files_downloaded = self._download_all_pages(title_used, save_path)
         else:
-            files_downloaded = asyncio.run(self.__async_download_all_pages(title_used, save_path))
+            files_downloaded = asyncio.run(self._async_download_all_pages(title_used, save_path))
         print(f"{len(files_downloaded)} pages downloaded")
         return save_path
 
-    async def __async_download_page(self, page_num: int, title_used: str, save_path: str, pause_sec: int = 0) -> str:
-        book_id = self.__get_book_id()
-        sign = self.__get_signature()
+    async def _async_download_page(self, page_num: int, title_used: str, save_path: str, pause_sec: int = 0) -> str:
+        book_id = self._get_book_id()
+        sign = self._get_signature()
         book_infos = self.get_book_infos()
         if not book_infos.custom_fields or not book_infos.custom_fields["pages"]:
             print("ERROR: Can't find pages in book infos.")
@@ -208,20 +214,20 @@ class Izneo(SiteProcessor):
         aes = AES.new(base64.b64decode(key), AES.MODE_CBC, base64.b64decode(iv))
         return aes.decrypt(crypted_content)
 
-    async def __async_download_all_pages(self, title_used: str, save_path: str) -> List[str]:
+    async def _async_download_all_pages(self, title_used: str, save_path: str) -> List[str]:
         book_infos = self.get_book_infos()
         if not book_infos.custom_fields or not book_infos.custom_fields["pages"]:
             return []
         return await tqdm.gather(
             *[
-                self.__async_download_page(page, title_used, save_path)
+                self._async_download_page(page, title_used, save_path)
                 for page in range(len(book_infos.custom_fields["pages"]))
             ],
             desc="Download pages",
             bar_format=BAR_FORMAT,
         )
 
-    def __download_all_pages(self, title_used: str, save_path: str) -> List[str]:
+    def _download_all_pages(self, title_used: str, save_path: str) -> List[str]:
         book_infos = self.get_book_infos()
         downloaded_pages: List[str] = []
         if not book_infos.custom_fields or not book_infos.custom_fields["pages"]:
@@ -231,28 +237,28 @@ class Izneo(SiteProcessor):
             desc="Download pages",
             bar_format=BAR_FORMAT,
         ):
-            res = asyncio.run(self.__async_download_page(page, title_used, save_path, self.config.pause_sec))
+            res = asyncio.run(self._async_download_page(page, title_used, save_path, self.config.pause_sec))
             downloaded_pages.append(res)
         return downloaded_pages
 
-    def __create_destination_folder(self, save_path: str) -> None:
+    def _create_destination_folder(self, save_path: str) -> None:
         if not os.path.exists(save_path):
             os.mkdir(save_path)
         print(f"Destination : {save_path}")
 
-    def __get_title_to_use(self, book_infos: BookInfos) -> str:
+    def _get_title_to_use(self, book_infos: BookInfos) -> str:
         return get_name_from_pattern(self.config.output_filename or "", book_infos) or self.get_default_title(
             book_infos
         )
 
     def get_book_infos(self) -> BookInfos:
-        if self.__book_infos:
-            return self.__book_infos
-        book_infos = self.__download_book_infos()
+        if self._book_infos:
+            return self._book_infos
+        book_infos = self._download_book_infos()
         title = clean_attribute(book_infos["title"])
         subtitle = clean_attribute(book_infos["subtitle"])
         read_direction = ReadDirection.RTOL if book_infos["readDirection"] == "rtl" else ReadDirection.LTOR
-        self.__book_infos = BookInfos(
+        self._book_infos = BookInfos(
             title=title,
             subtitle=subtitle,
             pages=int(book_infos["nbPage"]),
@@ -266,11 +272,11 @@ class Izneo(SiteProcessor):
             description=book_infos["synopsis"],
             custom_fields={"pages": book_infos["pages"], "state": book_infos["state"]},
         )
-        return self.__book_infos
+        return self._book_infos
 
-    def __download_book_infos(self):
-        book_id = self.__get_book_id()
-        sign = self.__get_signature()
+    def _download_book_infos(self):
+        book_id = self._get_book_id()
+        sign = self._get_signature()
         cookies = self.session.cookies if self.session else None
         r = requests_retry_session(session=self.session).get(
             f"https://www.izneo.com/book/{book_id}" + (f"?{sign}" if sign else ""),
@@ -280,9 +286,9 @@ class Izneo(SiteProcessor):
         )
         return json.loads(r.text)["data"]
 
-    def __get_book_id(self) -> str:
-        if self.__book_id:
-            return self.__book_id
+    def _get_book_id(self) -> str:
+        if self._book_id:
+            return self._book_id
         book_id = ""
         # URL direct.
         if res := re.search("(.+)reader\.(.+)/read/(.+)", self.url):
@@ -298,18 +304,18 @@ class Izneo(SiteProcessor):
             book_id = res[1]
         elif res := re.search(".+-(.+)", tmp_url.split("?")[0]):
             book_id = res[1]
-        self.__book_id = book_id
-        return self.__book_id
+        self._book_id = book_id
+        return self._book_id
 
-    def __get_signature(self) -> str:
-        if self.__sign is not None:
-            return self.__sign
+    def _get_signature(self) -> str:
+        if self._sign is not None:
+            return self._sign
         sign = ""
         if res := re.match("(.+)login=cvs&sign=([^&]*)", self.url):
             sign = res[2]
             sign = f"login=cvs&sign={sign}"
-        self.__sign = sign
-        return self.__sign
+        self._sign = sign
+        return self._sign
 
 
 def init(url: str = "", config: Optional[Config] = None) -> Izneo:
