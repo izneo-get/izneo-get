@@ -8,6 +8,7 @@ import base64
 import urllib.parse
 import asyncio
 from tqdm.asyncio import tqdm
+from functools import lru_cache
 from ..tools import (
     requests_retry_session,
     clean_name,
@@ -39,8 +40,6 @@ class Izneo(SiteProcessor):
     root_path = "https://www.izneo.com/"
 
     _book_infos: Optional[BookInfos] = None
-    _sign: Optional[str] = None
-    _book_id: Optional[str] = None
 
     def __init__(self, url: str = "", config: Optional[Config] = None) -> None:
         super().__init__(url=url, config=config)
@@ -286,9 +285,8 @@ class Izneo(SiteProcessor):
         )
         return json.loads(r.text)["data"]
 
+    @lru_cache
     def _get_book_id(self) -> str:
-        if self._book_id:
-            return self._book_id
         book_id = ""
         # URL direct.
         if res := re.search("(.+)reader\.(.+)/read/(.+)", self.url):
@@ -304,18 +302,15 @@ class Izneo(SiteProcessor):
             book_id = res[1]
         elif res := re.search(".+-(.+)", tmp_url.split("?")[0]):
             book_id = res[1]
-        self._book_id = book_id
-        return self._book_id
+        return book_id
 
+    @lru_cache
     def _get_signature(self) -> str:
-        if self._sign is not None:
-            return self._sign
         sign = ""
         if res := re.match("(.+)login=cvs&sign=([^&]*)", self.url):
             sign = res[2]
             sign = f"login=cvs&sign={sign}"
-        self._sign = sign
-        return self._sign
+        return sign
 
 
 def init(url: str = "", config: Optional[Config] = None) -> Izneo:
