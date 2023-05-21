@@ -1,13 +1,22 @@
 import asyncio
 import os
 import shutil
+import cv2
 
 import inquirer
+import numpy as np
 from context import tools
 import pytest
 import re
 from context import book_infos
 from izneo_get.config import ImageFormat
+
+
+def clean_output(output_path):
+    if os.path.exists(output_path):
+        shutil.rmtree(output_path)
+
+    os.makedirs(output_path, exist_ok=True)
 
 
 def test_strip_tags():
@@ -180,6 +189,34 @@ def test_convert_image_if_needed():
 def test_question_yes_no(monkeypatch):
     monkeypatch.setattr(inquirer, "prompt", lambda _: {"answer": True})
     assert tools.question_yes_no("question") == True
+
+
+def test_save_image():
+    for source in ["tests/resources/image.jpeg", "tests/resources/image.png", "tests/resources/image.webp"]:
+        img = cv2.imdecode(np.fromfile(source, dtype=np.uint8), cv2.IMREAD_UNCHANGED)
+        for format in [ImageFormat.JPEG, ImageFormat.WEBP]:
+            convert_to = f"tests/to_convert.{str(format.value).lower()}"
+            if os.path.exists(convert_to):
+                os.remove(convert_to)
+            ret = tools.save_image(img, convert_to, format, 10)
+            assert ret == convert_to
+            assert os.path.exists(convert_to)
+            assert os.path.getsize(convert_to) > 0
+            os.remove(convert_to)
+
+
+def test_convert_images_in_folder():
+    output_path = "tests/output"
+    clean_output(output_path)
+    for i in range(4):
+        shutil.copyfile("tests/resources/image.jpeg", f"tests/output/to_convert_{i}.jpeg")
+
+    for format in [ImageFormat.JPEG, ImageFormat.WEBP]:
+        assert tools.convert_images_in_folder("tests/output", format, 10)
+        for i in range(4):
+            assert os.path.exists(f"tests/output/to_convert_{i}.{format.value.lower()}")
+    assert not tools.convert_images_in_folder("tests/output", ImageFormat.ORIGIN, 10)
+    clean_output(output_path)
 
 
 if __name__ == "__main__":
