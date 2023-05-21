@@ -183,4 +183,4 @@ def test_question_yes_no(monkeypatch):
 
 
 if __name__ == "__main__":
-    test_convert_image_if_needed()
+    ...
