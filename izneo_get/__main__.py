@@ -1,55 +1,10 @@
 # -*- coding: utf-8 -*-
-__version__ = "1.00.00"
+__version__ = "1.0.0"
 """
 Source : https://github.com/izneo-get/izneo-get
 
 Ce script permet de récupérer une BD présente sur https://www.izneo.com/fr/ dans la limite des capacités de notre compte existant.
 
-usage: izneo_get.py [-h] [--session-id SESSION_ID] 
-                    [--output-folder OUTPUT_FOLDER]
-                    [--output-format {jpg,both,cbz}] [--config CONFIG]
-                    [--from-page FROM_PAGE] [--limit LIMIT] [--pause PAUSE]
-                    [--full-only] [--continue] [--user-agent USER_AGENT]
-                    [--webp WEBP] [--tree] [--force-title FORCE_TITLE]
-                    [--encoding ENCODING]
-                    url
-
-Script pour sauvegarder une BD Izneo.
-
-positional arguments:
-  url                   L'URL de la BD à récupérer ou le chemin vers un
-                        fichier local contenant une liste d'URLs
-
-optional arguments:
-  -h, --help            show this help message and exit
-  --session-id SESSION_ID, -s SESSION_ID
-                        L'identifiant de session
-  --output-folder OUTPUT_FOLDER, -o OUTPUT_FOLDER
-                        Répertoire racine de téléchargement
-  --output-format {jpg,both,cbz}, -f {jpg,both,cbz}
-                        Répertoire racine de téléchargement
-  --config CONFIG       Fichier de configuration
-  --from-page FROM_PAGE
-                        Première page à récupérer (défaut : 0)
-  --limit LIMIT         Nombre de pages à récupérer au maximum (défaut : 1000)
-  --pause PAUSE         Pause (en secondes) à respecter après chaque
-                        téléchargement d'image
-  --full-only           Ne prend que les liens de BD disponible dans
-                        l'abonnement
-  --continue            Pour reprendre là où on en était
-  --user-agent USER_AGENT
-                        User agent à utiliser
-  --webp WEBP           Conversion en webp avec une certaine qualité (exemple
-                        : --webp 75)
-  --tree                Pour créer l'arborescence dans le répertoire de
-                        téléchargement
-  --force-title FORCE_TITLE
-                        Le titre à utiliser dans les noms de fichier, à la
-                        place de celui trouvé sur la page
-  --encoding ENCODING   L'encoding du fichier d'entrée de liste d'URLs (ex : "utf-8")
-
-SESSION_ID est la valeur de "c03aab1711dbd2a02ea11200dde3e3d1" dans le cookie.
-Ces valeurs peuvent être stockées dans le fichier de configuration "izneo_get.cfg".
 """
 import importlib
 import re
@@ -79,7 +34,6 @@ def get_config(args_config: Config, config_file: Optional[str]) -> Config:
 
 
 def main() -> None:
-    # Vérification que c'est la dernière version.
     check_version(__version__)
 
     args_config, url, config_file = get_args()
@@ -91,7 +45,7 @@ def main() -> None:
     while not url:
         url = input("URL: ")
 
-    # Liste des URLs à récupérer.
+    # List of all URLs to process.
     url_list = get_all_urls(url)
 
     for url, forced_title in url_list:
@@ -107,7 +61,7 @@ def main() -> None:
             return
         print("OK")
 
-        # Si besoin, on crée une archive.
+        # If needed, we create an archive.
         if config.output_format in [OutputFormat.CBZ, OutputFormat.BOTH]:
             expected_cbz_name = save_path.strip(".cbz") + ".cbz"
             if config.continue_from_existing and os.path.exists(expected_cbz_name):
@@ -115,7 +69,7 @@ def main() -> None:
             else:
                 create_cbz(save_path)
 
-        # Si besoin, on supprime le répertoire des images.
+        # If.
         if config.output_format == OutputFormat.CBZ:
             shutil.rmtree(save_path.strip(".cbz"))
 

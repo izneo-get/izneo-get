@@ -4,6 +4,13 @@
 
 
 ## izneo_get.py
+### Version 1.0.0 (2023-05-03)
+- [NEW] Possibilité d'utiliser l'application en mode interactif. 
+- [NEW] Téléchargement asynchrone et multithread lorsque aucune pause entre 2 pages est demandée. 
+- [CHANGE] Barre de progression. 
+- [TECH] Refacto du code. 
+- [TECH] utilisation de `Poetry`.
+
 ### Version 0.09.03 (2021-12-16)
 - [BUGFIX] Gestion des espaces en fin de nom de fichier. 
 
