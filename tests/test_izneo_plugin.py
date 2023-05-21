@@ -190,4 +190,4 @@ def test_get_signature():
 
 
 if __name__ == "__main__":
-    test_download_all_pages()
+    ...

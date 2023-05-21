@@ -21,4 +21,4 @@ def test_get_default_title():
 
 
 if __name__ == "__main__":
-    test_get_default_title()
+    ...

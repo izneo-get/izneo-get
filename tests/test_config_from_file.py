@@ -69,4 +69,4 @@ def test_get_config_from_file_full():
 
 
 if __name__ == "__main__":
-    test_get_config_from_file_empty()
+    ...
