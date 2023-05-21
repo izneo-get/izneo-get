@@ -1,21 +1,27 @@
 # -*- coding: utf-8 -*-
 
 import asyncio
+import glob
 import html
 import io
 import os
 import re
 import shutil
+import cv2
 import inquirer
+import numpy as np
+from tqdm.asyncio import tqdm
 from urllib3.util import Retry
 import requests
 from requests import Session
 from requests.adapters import HTTPAdapter
 from PIL import Image
-from typing import Any, Dict, Optional, Set
+from typing import Any, Dict, List, Optional, Set
 
 from izneo_get.config import ImageFormat
 from .book_infos import BookInfos
+
+BAR_FORMAT = "{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}]"  # Progress bar format
 
 
 def strip_tags(html: str) -> str:
@@ -196,10 +202,10 @@ def get_unique_name(path: str):
     return f"{path} ({i}){ext}"
 
 
-def convert_image(store_path: str, store_path_converted: str, format: str, image_quality: int = 100) -> str:
-    im = Image.open(store_path)
+def convert_image(input_path: str, store_path_converted: str, format: str, image_quality: int = 100) -> str:
+    im = Image.open(input_path)
     im.save(store_path_converted, format, quality=image_quality)
-    os.remove(store_path)
+    os.remove(input_path)
     return store_path_converted
 
 
@@ -217,6 +223,87 @@ def convert_image_if_needed(
     if from_path != to_path:
         os.rename(from_path, to_path)
     return to_path
+
+
+def convert_images_in_folder(
+    folder: str, image_format: ImageFormat, quality: Optional[int] = None, crop: Optional[bool] = None
+) -> List[str]:
+    """Convert images of a folder in a specitic format."""
+    if quality is None:
+        quality = 100
+    if crop is None:
+        crop = False
+    print(f"Convert images in {image_format.value} (quality: {quality})")
+    if image_format not in (ImageFormat.JPEG, ImageFormat.WEBP):
+        print("Nothing to convert")
+        return []
+    all_files = []
+    for ext in ("jpg", "jpeg", "png", "webp", "bmp"):
+        all_files.extend(glob.glob(f"{folder}/*.{ext}", recursive=True))
+    files_converted = asyncio.run(async_convert_images(all_files, image_format, quality, crop))
+    print(f"{len(files_converted)} images converted")
+    return files_converted
+
+
+async def async_convert_images(
+    all_files: List[str], image_format: ImageFormat, quality: int = 100, crop: bool = False
+) -> List[str]:
+    return await tqdm.gather(
+        *[async_convert_image(filename, image_format, quality, crop) for filename in all_files],
+        desc="Convert images",
+        bar_format=BAR_FORMAT,
+    )
+
+
+async def async_convert_image(filename: str, image_format: ImageFormat, quality: int = 100, crop: bool = False) -> str:
+    new_filename = f"{os.path.splitext(filename)[0]}.{str(image_format.value).lower()}"
+    return await asyncio.to_thread(save_image_from_path, filename, new_filename, image_format, quality, crop)
+
+
+def save_image_from_path(
+    filename: str, new_filename: str, image_format: ImageFormat, quality: int = 100, crop: bool = False
+) -> str:
+    img = auto_crop(filename) if crop else cv2.imdecode(np.fromfile(filename, dtype=np.uint8), cv2.IMREAD_UNCHANGED)
+    save_image(img, new_filename, image_format, quality)
+    if new_filename != filename:
+        os.remove(filename)
+    return new_filename
+
+
+def save_image(img: np.ndarray, output_path: str, image_format: ImageFormat = ImageFormat.JPEG, quality=100) -> str:
+    """
+    Save image in the desired quality.
+
+    Parameters
+    ----------
+    img : numpy.ndarray
+        cv2 image object to display.
+    output_path : str
+        File path to saved image.
+    image_format : ImageFormat (default ImageFormat.JPEG)
+    quality : int (default 100)
+        Save quality factor. Max 100 (best quality).
+
+    Returns
+    -------
+    str
+        Output path of saved image.
+    """
+    ext = output_path.split(".")[-1].lower()
+    params = []
+    if image_format == ImageFormat.JPEG:
+        params = [cv2.IMWRITE_JPEG_QUALITY, quality]
+    if image_format == ImageFormat.WEBP:
+        params = [cv2.IMWRITE_WEBP_QUALITY, quality]
+
+    _, im_buf_arr = cv2.imencode(f".{ext}", img, params)
+    im_buf_arr.tofile(output_path)
+    return output_path
+
+
+def auto_crop(filename: str) -> np.ndarray:
+    # TODO : implement crop
+    return cv2.imdecode(np.fromfile(filename, dtype=np.uint8), cv2.IMREAD_UNCHANGED)
 
 
 def question_yes_no(message: str, default: bool = True, carousel: bool = True) -> bool:

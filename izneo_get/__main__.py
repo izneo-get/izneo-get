@@ -13,9 +13,9 @@ import sys
 import shutil
 from typing import List, Optional, Tuple
 from .config_from_args import get_args
-from .tools import check_version, create_cbz
+from .tools import check_version, convert_images_in_folder, create_cbz
 from .plugins.site_processor import SiteProcessor
-from .config import Config, OutputFormat
+from .config import Config, ImageFormat, OutputFormat
 from .config_from_query import ConfigQuery
 from .config_from_file import get_config_from_file
 
@@ -59,7 +59,10 @@ def main() -> None:
         if not save_path:
             print("WARNING: Nothing was downloaded.")
             return
-        print("OK")
+        # print("Download completed")
+
+        if config.image_format and config.image_format != ImageFormat.ORIGIN:
+            convert_images_in_folder(save_path, config.image_format, config.image_quality)
 
         # If needed, we create an archive.
         if config.output_format in [OutputFormat.CBZ, OutputFormat.BOTH]:

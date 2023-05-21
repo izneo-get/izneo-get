@@ -18,12 +18,11 @@ from ..tools import (
     async_http_get,
     convert_image_if_needed,
     question_yes_no,
+    BAR_FORMAT,
 )
 from ..config import Config, ImageFormat, OutputFormat
 from ..book_infos import BookInfos, ReadDirection
 from .site_processor import SiteProcessor
-
-BAR_FORMAT = "{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}]"  # Progress bar format
 
 
 class Izneo(SiteProcessor):
@@ -196,14 +195,17 @@ class Izneo(SiteProcessor):
         open(store_path, "wb").write(uncrypted)
 
         image_format = get_image_type(uncrypted)
-        if self.config.image_format == ImageFormat.ORIGIN:
-            store_path_converted = f"{save_path}/{title_used} {page_txt}.{image_format}"
+        store_path_converted = f"{save_path}/{title_used} {page_txt}.{image_format}"
+        if os.path.exists(store_path_converted):
+            os.remove(store_path_converted)
+        os.rename(store_path, store_path_converted)
 
-        # Convert image if needed.
-        if self.config.image_format:
-            convert_image_if_needed(
-                store_path, store_path_converted, self.config.image_format, self.config.image_quality
-            )
+        # # Convert image if needed.
+        # if self.config.image_format:
+        #     convert_image_if_needed(
+        #         store_path_converted, store_path_converted, self.config.image_format, self.config.image_quality
+        #     )
+
         if pause_sec:
             await asyncio.sleep(pause_sec)
         return store_path_converted
