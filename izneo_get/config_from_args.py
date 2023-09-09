@@ -5,8 +5,6 @@ from izneo_get.action import Action
 
 
 def get_args() -> tuple[Config, Action, str, str]:
-    # Parse des arguments passés en ligne de commande.
-    default_action = "process"
     action_choices = {"infos", "download", "convert", "pack", "process"}
     parser = argparse.ArgumentParser(description="""Script pour sauvegarder une BD Izneo.""")
     parser.add_argument(
@@ -14,7 +12,7 @@ def get_args() -> tuple[Config, Action, str, str]:
         type=str,
         default=None,
         nargs="?",
-        help="L'action à exécuter",
+        help="L'action à exécuter {infos,download,convert,pack,process}",
     )
     parser.add_argument(
         "url",
@@ -84,6 +82,8 @@ def get_args() -> tuple[Config, Action, str, str]:
     # Si on n'a pas mis d'action valide, on considère que c'est une URL.
     if parsed.action is not None and parsed.action.lower() not in action_choices:
         parsed.url = parsed.action
+        # Parse des arguments passés en ligne de commande.
+        default_action = "process"
         parsed.action = default_action
     action = Action.from_str(parsed.action)
     config = Config(

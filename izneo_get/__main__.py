@@ -76,8 +76,8 @@ def main() -> None:
                 print(e)
                 continue
             if do_download and not save_path:
-                print("ERROR: Nothing was downloaded.")
-                return
+                print("WARNING: Nothing was downloaded.")
+                continue
         result = save_path
         # print("Download completed")
 

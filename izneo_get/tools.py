@@ -239,7 +239,7 @@ def convert_images_in_folder(
         return []
     all_files = []
     for ext in ("jpg", "jpeg", "png", "webp", "bmp"):
-        all_files.extend(glob.glob(f"{folder}/*.{ext}", recursive=True))
+        all_files.extend(glob.glob(os.path.join(glob.escape(folder), f"*.{ext}"), recursive=True))
     files_converted = asyncio.run(async_convert_images(all_files, image_format, quality, crop))
     print(f"{len(files_converted)} images converted")
     return files_converted
