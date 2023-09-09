@@ -2,7 +2,7 @@
 
 ## izneo_get.py
 
-### Version 1.0.0 (2023-05-03)
+### Version 1.0.0 (2023-09-09)
 
 - [NEW] Possibilité d'utiliser l'application en mode interactif.
 - [NEW] Téléchargement asynchrone et multithread lorsque aucune pause entre 2 pages est demandée.
