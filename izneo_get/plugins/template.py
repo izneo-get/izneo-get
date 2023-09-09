@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from typing import Optional
 from .site_processor import SiteProcessor
 from ..book_infos import BookInfos

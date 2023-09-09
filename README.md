@@ -242,7 +242,7 @@ python izneo_infos.py --output assassination-classroom-t1.xml https://www.izneo.
 ### Prérequis
 
 * Python 3.10+ (non testé avec les versions précédentes)
-* pip (désormais inclus avec Python)
+* `poetry` (recommandé) ou `pip`
 * Librairies SSL
 
 #### Sous Windows
@@ -276,7 +276,22 @@ git clone https://github.com/izneo-get/izneo-get.git
 cd izneo-get
 ```
 
-* (optionnel) Créez un environnement virtuel Python dédié :  
+#### Avec poetry (recommandé)
+
+* Créez un environnement virtuel Python dédié :  
+
+```cmd
+poetry shell
+```
+
+* Installez les dépendances :  
+
+```cmd
+poetry install
+```
+
+#### Avec pip
+* Créez un environnement virtuel Python dédié :  
 
 ```cmd
 python -m venv env
@@ -303,6 +318,6 @@ python.exe -m pip install beautifulsoup4
 python.exe -m pip install Pillow
 ```
   
-ou  
+## Alternative sans installer Python (sous Windows uniquement)  
   
 * Vous pouvez télécharger uniquement le [binaire Windows](https://github.com/izneo-get/izneo-get/releases/latest) (expérimental).  

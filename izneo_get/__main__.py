@@ -59,7 +59,7 @@ def main() -> None:
         if not action:
             return
 
-    input_prompt = "Folder: " if action in [Action.CONVERT, Action.PACK] else "URL:"
+    input_prompt = "Folder: " if action in [Action.CONVERT, Action.PACK] else "URL: "
     while not url:
         url = input(input_prompt)
 
