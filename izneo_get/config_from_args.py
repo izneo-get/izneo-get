@@ -1,11 +1,21 @@
 import argparse
 
 from izneo_get.config import Config, ImageFormat, OutputFormat
+from izneo_get.action import Action
 
 
-def get_args() -> tuple[Config, str, str]:
+def get_args() -> tuple[Config, Action, str, str]:
     # Parse des arguments passés en ligne de commande.
+    default_action = "process"
+    action_choices = {"infos", "download", "convert", "pack", "process"}
     parser = argparse.ArgumentParser(description="""Script pour sauvegarder une BD Izneo.""")
+    parser.add_argument(
+        "action",
+        type=str,
+        default=None,
+        nargs="?",
+        help="L'action à exécuter",
+    )
     parser.add_argument(
         "url",
         type=str,
@@ -71,6 +81,11 @@ def get_args() -> tuple[Config, str, str]:
         help="Pour ne pas utiliser le cache de session",
     )
     parsed = parser.parse_args()
+    # Si on n'a pas mis d'action valide, on considère que c'est une URL.
+    if parsed.action is not None and parsed.action.lower() not in action_choices:
+        parsed.url = parsed.action
+        parsed.action = default_action
+    action = Action.from_str(parsed.action)
     config = Config(
         output_folder=parsed.output_folder,
         output_filename=parsed.output_filename,
@@ -82,4 +97,4 @@ def get_args() -> tuple[Config, str, str]:
         continue_from_existing=parsed.continue_from_existing,
         authentication_from_cache=False if parsed.ignore_cache == True else None,
     )
-    return config, parsed.url, parsed.config
+    return config, action, parsed.url, parsed.config

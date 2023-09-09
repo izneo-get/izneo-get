@@ -12,6 +12,10 @@ import os
 import sys
 import shutil
 from typing import List, Optional, Tuple
+
+from .action import Action
+from .action_from_query import ActionQuery
+from .no_plugin_found_exception import NoPluginFOundException
 from .config_from_args import get_args
 from .tools import check_version, convert_images_in_folder, create_cbz
 from .plugins.site_processor import SiteProcessor
@@ -33,14 +37,27 @@ def get_config(args_config: Config, config_file: Optional[str]) -> Config:
     return get_config_from_file(CONFIG_FILE if os.path.exists(CONFIG_FILE) else "", args_config)
 
 
+def action_infos_and_download(url: str, config: Config, do_download: bool, forced_title: str = "") -> str:
+    processor = get_site_processor(url=url, config=config)
+    if not processor:
+        raise NoPluginFOundException(f'No plugin found for "{url}".')
+    processor.authenticate()
+    infos = processor.get_book_infos()
+    print(infos)
+    return processor.download(forced_title) if do_download else ""
+
+
 def main() -> None:
     check_version(__version__)
 
-    args_config, url, config_file = get_args()
+    args_config, action, url, config_file = get_args()
     config = get_config(args_config, config_file)
     if not url:
         config_query = ConfigQuery(config, CONFIG_FILE)
         config = config_query.update_config_by_command()
+        action = ActionQuery.get_action()
+        if not action:
+            return
 
     while not url:
         url = input("URL: ")
@@ -49,32 +66,41 @@ def main() -> None:
     url_list = get_all_urls(url)
 
     for url, forced_title in url_list:
-        processor = get_site_processor(url=url, config=config)
-        if not processor:
-            continue
-        processor.authenticate()
-        infos = processor.get_book_infos()
-        print(infos)
-        save_path = processor.download(forced_title)
-        if not save_path:
-            print("WARNING: Nothing was downloaded.")
-            return
+        result = ""
+        save_path = url
+        if action in [Action.INFOS, Action.DOWNLOAD, Action.PROCESS]:
+            do_download = action in [Action.DOWNLOAD, Action.PROCESS]
+            try:
+                save_path = action_infos_and_download(url, config, do_download, forced_title)
+            except NoPluginFOundException as e:
+                print(e)
+                continue
+            if do_download and not save_path:
+                print("ERROR: Nothing was downloaded.")
+                return
+        result = save_path
         # print("Download completed")
 
-        if config.image_format and config.image_format != ImageFormat.ORIGIN:
+        # If needed, we convert the images.
+        if action in [Action.CONVERT, Action.PROCESS] and (
+            config.image_format and config.image_format != ImageFormat.ORIGIN
+        ):
             convert_images_in_folder(save_path, config.image_format, config.image_quality)
 
         # If needed, we create an archive.
-        if config.output_format in [OutputFormat.CBZ, OutputFormat.BOTH]:
+        if action in [Action.PACK, Action.PROCESS] and config.output_format in [OutputFormat.CBZ, OutputFormat.BOTH]:
             expected_cbz_name = save_path.strip(".cbz") + ".cbz"
             if config.continue_from_existing and os.path.exists(expected_cbz_name):
                 print(f'File "{expected_cbz_name}" already exists.')
             else:
                 create_cbz(save_path)
+            result = expected_cbz_name
+            # If needed, we delete the folder.
+            if config.output_format == OutputFormat.CBZ:
+                shutil.rmtree(save_path.strip(".cbz"))
 
-        # If.
-        if config.output_format == OutputFormat.CBZ:
-            shutil.rmtree(save_path.strip(".cbz"))
+        # if action in [Action.DOWNLOAD, Action.CONVERT, Action.PACK, Action.PROCESS]:
+        #     print(f'{url} processed as "{result}"')
 
     print("Done!")
 
