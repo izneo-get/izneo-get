@@ -7,9 +7,9 @@ from typing import Callable
 from izneo_get import tools
 
 try:
-    from config import Config, ImageFormat, OutputFormat
-except ImportError:
     from .config import Config, ImageFormat, OutputFormat
+except ImportError:
+    from config import Config, ImageFormat, OutputFormat
 
 
 class MenuItem(Enum):

@@ -3,9 +3,9 @@ import inquirer
 from typing import Optional
 
 try:
-    from action import Action
-except ImportError:
     from .action import Action
+except ImportError:
+    from action import Action
 
 
 class ActionQuery:
