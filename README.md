@@ -16,21 +16,13 @@ TODO: remplir
 ### Utilisation
 
 ```cmd
-usage: izneo_get.py [-h] 
-                    [--config CONFIG] 
-                    [--output-folder OUTPUT_FOLDER] 
-                    [--output-filename OUTPUT_FILENAME]
-                    [--image-format {webp,jpeg,origin}] [--image-quality IMAGE_QUALITY] [--output-format {cbz,images,both}] [--pause PAUSE]   
-                    [--user-agent USER_AGENT] 
-                    [--continue] 
-                    [--ignore-cache]
-                    [url]
-
+usage: izneo_get.py [-h] [--config CONFIG] [--output-folder OUTPUT_FOLDER] [--output-filename OUTPUT_FILENAME] [--image-format {webp,jpeg,origin}] [--image-quality IMAGE_QUALITY]
+                    [--output-format {cbz,images,both}] [--pause PAUSE] [--user-agent USER_AGENT] [--continue] [--ignore-cache]
+                    [action] [url]
 Script pour sauvegarder une BD Izneo.
-
 positional arguments:
+  action                L'action à exécuter {infos,download,convert,pack,process}
   url                   L'URL de la BD à récupérer ou le chemin vers un fichier local contenant une liste d'URLs
-
 options:
   -h, --help            show this help message and exit
   --config CONFIG       Fichier de configuration
@@ -48,7 +40,7 @@ options:
   --user-agent USER_AGENT
                         User agent à utiliser
   --continue            Pour éviter de télécharger un fichier déjà existant
-  --ignore-cache        Pour ne pas utiliser le cache de session
+  --ignore-cache        Pour ne pas utiliser le cache de session           
 ```
 
 Exemple :  
@@ -62,26 +54,20 @@ python izneo_get.py https://www.izneo.com/fr/manga-et-simultrad/shonen/assassina
 * Pour récupérer la BD dans une archive CBZ en forçant le titre (fichier de config présent) :  
 
 ```cmd
-python izneo_get.py https://www.izneo.com/fr/manga-et-simultrad/shonen/assassination-classroom-4744/assassination-classroom-t1-19197 -f cbz --force-title "[Yusei Matsui] Assassination Classroom - Tome 1"
+python izneo_get.py https://www.izneo.com/fr/manga-et-simultrad/shonen/assassination-classroom-4744/assassination-classroom-t1-19197 --output-format cbz --output-filename "[Yusei Matsui] Assassination Classroom - Tome 1"
 ```
 
 * Pour récupérer la BD dans une archive CBZ avec des images converties en WEBP (fichier de config présent) :  
 
 ```cmd
-python izneo_get.py https://www.izneo.com/fr/manga-et-simultrad/shonen/assassination-classroom-4744/assassination-classroom-t1-19197 -f cbz --webp 70
-```
-
-* Pour récupérer une liste de BDs, dans un répertoire d'images correspondant à l'arborescence du serveur, sans fichier de config présent :  
-
-```cmd
-python izneo_get.py /tmp/input.txt -s abcdefghijkl123456789012345 -o /tmp/DOWNLOADS --tree
+python izneo_get.py https://www.izneo.com/fr/manga-et-simultrad/shonen/assassination-classroom-4744/assassination-classroom-t1-19197 --output-format cbz --image-format webp --image-quality 70
 ```
 
 * Récupérer tous les tomes d'une série :  
 
 ```cmd
 python izneo_list.py --full-only URL > input.txt
-python izneo_get.py --continue --output-format cbz --webp 70 --full-only input.txt
+python izneo_get.py --continue --output-format cbz --image-format webp --image-quality 70 input.txt
 ```
 
 SESSION_ID est la valeur de "c03aab1711dbd2a02ea11200dde3e3d1" dans les cookies.  
