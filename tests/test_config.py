@@ -15,9 +15,9 @@ def test_to_dict():
     config_dict = config.to_dict()
     assert config_dict["output_folder"] == config.output_folder
     assert config_dict["output_filename"] == config.output_filename
-    assert config_dict["image_format"] == config.image_format.value
+    assert config.image_format and config_dict["image_format"] == config.image_format.value
     assert config_dict["image_quality"] == str(config.image_quality)
-    assert config_dict["output_format"] == config.output_format.value
+    assert config.output_format and config_dict["output_format"] == config.output_format.value
     assert config_dict["pause_sec"] == str(config.pause_sec)
     assert config_dict["user_agent"] == config.user_agent
     assert config_dict["continue_from_existing"] == str(config.continue_from_existing)
