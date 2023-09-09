@@ -9,7 +9,55 @@ Il est évident que les BD ne doivent en aucun cas être conservées une fois la
 Il est possible de lancer le programme sans aucun argument.  
 Le programme demandera alors les paramètres interactivement.  
 
-TODO: remplir
+```cmd
+[?] What parameter do you want to update: 
+   Output folder: DOWNLOADS/{serie}
+   Filename pattern: {title} - {volume}. {subtitle}
+   Image format: JPEG
+   Image quality: 100
+   Output format: IMAGES
+   Pause (sec): 0
+   User agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:68.0) Gecko/20100101 Firefox/68.0
+   Continue from existing: False
+   Authentication from cache: True
+   Save this config as default
+   >> DONE <<
+```
+
+Ce menu se navigue avec les flèches du clavier et la touche `Entrée` pour valider. Vous pouvez changer toutes les valeurs.  
+Pour en faire les valeurs par défaut, on peut les enregistrer dans le fichier de config avec l'option `Save this config as default`.  
+Une fois les paramètres définis, terminer avec `>> DONE <<`.  
+
+* `Output folder` : Le réprtoire dans lequel sera enregistré les fichiers.
+* `Filename pattern` : Le modèle utilisé pour le nom de fichier. Les mots clés entre `{}` seront remplacés par la valeur correspondante dans les informations du livre.
+* `Image format` : Le format des images.
+* `Image quality` : La qualité des images (uniquement si `Image format` est différent de `ORIGINAL`).
+* `Output format` : Permet de dire si on souhaite avoir en sortie un répertoire avec des images (`IMAGE`), un fichier CBZ (`CBZ`) ou les deux (`BOTH`).
+* `Pause (sec)` : Le temps d'attente en secondes entre 2 téléchargements d'image. Si `0`, les images seront téléchargées en parallèle.
+* `User agent` : La signature de navigateur à utiliser.
+* `Continue from existing` : Permet de reprendre un téléchargement interrompu (`True`) ou télécharger à nouveau même si les fichiers existent déjà (`False`).
+* `Authentication from cache` : Permet d'utiliser le fichier de cache pour s'authentifier (`True`). Si `False`, les informations de connexion seront demandées.
+* `Save this config as default` : Enregistrer cette configuration pour qu'elle soit utilisée par défaut.
+* `>> DONE <<` : Passer à l'étape suivante.
+  
+Le programme demande l'action à effectuer :  
+
+```cmd
+[?] What do you want to do?: 
+   Download + Convert + Pack
+   Get book infos only
+   Download book only
+   Convert book only
+   Pack book only
+   EXIT
+```
+
+* `Download + Convert + Pack` : Télécharger le livre dans `Output folder` avec un nom basé sur `Filename pattern`, convertir les images au format attendu (`Image format`, `Image quality`) et créer l'archive au format attendu (`Output format`).
+* `Get book infos only` : Récupérer et afficher les informations du livre uniquement.
+* `Download book only` : Télécharger le livre uniquement, sans modifier les images.
+* `Convert book only` : Convertir les images d'un répertoire au format attendu uniquement.
+* `Pack book only` : Créer l'archive au format attendu uniquement.
+* `EXIT` : Sortir du programme sans rien faire.
 
 ## Utilisation en ligne de commande
 
