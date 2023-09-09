@@ -1,12 +1,10 @@
 [DEFAULT]
-# La valeur de la variable de cookie "c03aab1711dbd2a02ea11200dde3e3d1".
-session_id = REMPLISSEZ_MOI
-
-# Pour définir un répertoire de téléchargement autre que la racine.
-#output_folder = c:\Mon\Repertoire\izneo
-
-# Pour définir le User-Agent à utiliser.
-#user_agent = Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:68.0) Gecko/20100101 Firefox/68.0
-
-# Pause (en seconde) à respecter entre chaque page.
-#pause = 1
+output_folder = DOWNLOADS/{serie}
+output_filename = {title} - {volume}. {subtitle}
+image_format = ORIGINAL
+image_quality = 100
+output_format = BOTH
+pause_sec = 0
+user_agent = Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:68.0) Gecko/20100101 Firefox/68.0
+continue_from_existing = False
+authentication_from_cache = True
