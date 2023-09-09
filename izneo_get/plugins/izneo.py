@@ -238,7 +238,7 @@ class Izneo(SiteProcessor):
             desc="Download pages",
             bar_format=BAR_FORMAT,
         ):
-            res = asyncio.run(self._async_download_page(page, title_used, save_path, self.config.pause_sec))
+            res = asyncio.run(self._async_download_page(page, title_used, save_path, self.config.pause_sec or 0))
             downloaded_pages.append(res)
         return downloaded_pages
 
@@ -291,9 +291,9 @@ class Izneo(SiteProcessor):
     def _get_book_id(self) -> str:
         book_id = ""
         # URL direct.
-        if res := re.search("(.+)reader\.(.+)/read/(.+)", self.url):
+        if res := re.search(r"(.+)reader\.(.+)/read/(.+)", self.url):
             book_id = res[3]
-            if res := re.search("(.+)\?(.*)", book_id):
+            if res := re.search(r"(.+)\?(.*)", book_id):
                 book_id = res[1]
 
         # On teste si c'est une page de description ou une page de lecture.
