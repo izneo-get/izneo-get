@@ -59,8 +59,9 @@ def main() -> None:
         if not action:
             return
 
+    input_prompt = "Folder: " if action in [Action.CONVERT, Action.PACK] else "URL:"
     while not url:
-        url = input("URL: ")
+        url = input(input_prompt)
 
     # List of all URLs to process.
     url_list = get_all_urls(url)
@@ -106,7 +107,7 @@ def main() -> None:
 
 
 def get_all_urls(url: str) -> List[Tuple[str, str]]:
-    return get_urls_from_file(url) if os.path.exists(url) else [(url, "")]
+    return get_urls_from_file(url) if os.path.exists(url) and os.path.isfile(url) else [(url, "")]
 
 
 def get_urls_from_file(url: str, encoding: str = "utf-8") -> List[tuple[str, str]]:
