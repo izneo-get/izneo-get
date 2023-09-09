@@ -86,19 +86,28 @@ def main() -> None:
         if action in [Action.CONVERT, Action.PROCESS] and (
             config.image_format and config.image_format != ImageFormat.ORIGIN
         ):
-            convert_images_in_folder(save_path, config.image_format, config.image_quality)
+            if os.path.isdir(save_path):
+                convert_images_in_folder(save_path, config.image_format, config.image_quality)
+            else:
+                print(f'ERROR: "{save_path}" is not a folder.')
 
         # If needed, we create an archive.
-        if action in [Action.PACK, Action.PROCESS] and config.output_format in [OutputFormat.CBZ, OutputFormat.BOTH]:
-            expected_cbz_name = save_path.strip(".cbz") + ".cbz"
-            if config.continue_from_existing and os.path.exists(expected_cbz_name):
-                print(f'File "{expected_cbz_name}" already exists.')
+        if action in [Action.PACK, Action.PROCESS] and config.output_format in [
+            OutputFormat.CBZ,
+            OutputFormat.BOTH,
+        ]:
+            if os.path.isdir(save_path):
+                expected_cbz_name = save_path.strip(".cbz") + ".cbz"
+                if config.continue_from_existing and os.path.exists(expected_cbz_name):
+                    print(f'File "{expected_cbz_name}" already exists.')
+                else:
+                    create_cbz(save_path)
+                result = expected_cbz_name
+                # If needed, we delete the folder.
+                if config.output_format == OutputFormat.CBZ:
+                    shutil.rmtree(save_path.strip(".cbz"))
             else:
-                create_cbz(save_path)
-            result = expected_cbz_name
-            # If needed, we delete the folder.
-            if config.output_format == OutputFormat.CBZ:
-                shutil.rmtree(save_path.strip(".cbz"))
+                print(f'ERROR: "{save_path}" is not a folder.')
 
         # if action in [Action.DOWNLOAD, Action.CONVERT, Action.PACK, Action.PROCESS]:
         #     print(f'{url} processed as "{result}"')
