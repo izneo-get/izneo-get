@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-__version__ = "0.07.1"
+__version__ = "0.08.0"
 """
 Source : https://github.com/izneo-get/izneo-get
 
@@ -102,14 +102,47 @@ def parse_html(html, force_title=False):
         title = title[0].text if title else ""
         title = strip_tags(title)
         if title and force_title:
-            title += " --force-title " + title
+            title += f" --force-title {title}"
         title = re.sub(r"\s+", " ", title).strip()
         if title and link:
-            print("# " + title)
+            print(f"# {title}")
             print(link)
         if title and link:
             new_results += 1
     return new_results
+
+
+def parse_bibliotheque(force_title=False):
+    url = "https://www.izneo.com/fr/api/web/library-v2/albums/order-date/"
+    step = 0
+    new_results = 1
+    expected_albums = 1_000_000
+    while step * 30 <= expected_albums and new_results > 0:
+        new_results = 0
+        tmp_url = url + str(step * 30) + "/30"
+        data = {
+            "text": "",
+        }
+        # r = s.post(url, allow_redirects=True, data=data)
+        r = requests_retry_session(session=s).post(tmp_url, allow_redirects=True, data=data)
+
+        data = json.loads(r.text)
+        if "totalAlbums" not in data:
+            continue
+        expected_albums = data["totalAlbums"]
+        for album in data["albums"]:
+            link = root_path + album["url"]
+            title = album["title"]
+            if title and force_title:
+                title += f" --force-title {title}"
+            title = re.sub(r"\s+", " ", title).strip()
+            if title and link:
+                print(f"# {title}")
+                print(link)
+            if title and link:
+                new_results += 1
+        time.sleep(pause_sec)
+        step += 1
 
 
 def parse_from_id(session, id, force_title=False):
@@ -206,7 +239,9 @@ if __name__ == "__main__":
     )
     s.cookies.set_cookie(cookie_obj)
 
-    if re.match("^http[s]*://.*", search):
+    if search.lower() == "bibliotheque" or "https://www.izneo.com/fr/bibliotheque" in search:
+        parse_bibliotheque(force_title=force_title)
+    elif re.match("^http[s]*://.*", search):
         new_results = 0
         # On est dans un cas où on a une URL de série.
         id = re.findall(".+-(\d+)/", search)

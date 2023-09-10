@@ -43,6 +43,10 @@
 
 ## izneo_list.py
 
+### Version 0.08 (2023-09-10)
+
+- [ADD] Possibilité de faire la liste de sa bibliothèque avec `izneo_list.py bibliotheque`.
+
 ### Version 0.07 (2022-09-17)
 
 - [CHANGE] La récupération d'albums ne peut se faire qu'à partir de l'URL d'une série.
