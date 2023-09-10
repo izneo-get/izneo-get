@@ -49,10 +49,11 @@ def action_infos_and_download(url: str, config: Config, do_download: bool, force
 
 def main() -> None:
     check_version(__version__)
-
+    is_command_line = False
     args_config, action, url, config_file = get_args()
     config = get_config(args_config, config_file)
     if not url:
+        is_command_line = True
         config_query = ConfigQuery(config, CONFIG_FILE)
         config = config_query.update_config_by_command()
         action = ActionQuery.get_action()
@@ -113,6 +114,8 @@ def main() -> None:
         #     print(f'{url} processed as "{result}"')
 
     print("Done!")
+    if is_command_line:
+        input("Press [ENTER] to exit...")
 
 
 def get_all_urls(url: str) -> List[Tuple[str, str]]:
