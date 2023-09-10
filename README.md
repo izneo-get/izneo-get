@@ -312,11 +312,15 @@ En cas de problème, on peut installer les dépendances à la main :
 cd izneo-get
 python -m venv env
 env\Scripts\activate
-python.exe -m pip install --upgrade pip
-python.exe -m pip install pycryptodome
-python.exe -m pip install requests
-python.exe -m pip install beautifulsoup4
-python.exe -m pip install Pillow
+python -m pip install --upgrade pip
+python -m pip install pycryptodome
+python -m pip install requests
+python -m pip install beautifulsoup4
+python -m pip install Pillow
+python -m pip install inquirer
+python -m pip install tqdm
+python -m pip install opencv-python
+python -m pip install pytest
 ```
   
 ## Alternative sans installer Python (sous Windows uniquement)  

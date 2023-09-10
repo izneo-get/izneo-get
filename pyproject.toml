@@ -8,7 +8,7 @@ readme = "README.md"
 packages = [{include = "izneo_get"}]
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = "^3.10"
 requests = "^2.30.0"
 inquirer = "^3.1.3"
 pycryptodome = "^3.18.0"
