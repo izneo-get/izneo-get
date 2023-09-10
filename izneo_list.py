@@ -220,6 +220,7 @@ if __name__ == "__main__":
     else:
         # config_name = re.sub(r"\.py$", ".cfg", os.path.basename(sys.argv[0]).replace("izneo_list", "izneo_get"))
         config_name = re.sub(r"\.py$", ".cfg", os.path.abspath(sys.argv[0]).replace("izneo_list", "izneo_get"))
+        # config_name = re.sub(r"\.py$", ".cfg", os.path.abspath(sys.argv[0]))
     config.read(config_name)
 
     def get_param_or_default(config, param_name, default_value, cli_value=None):
@@ -243,12 +244,12 @@ if __name__ == "__main__":
     )
     s.cookies.set_cookie(cookie_obj)
 
-    if search.lower() == "bibliotheque":
-        parse_bibliotheque(force_title=force_title)
-    elif re.match(r"^http[s]://www.izneo.com/fr/bibliotheque/detail/.+-(\d+)", search):
+    if re.match(r"^http[s]://www.izneo.com/fr/bibliotheque/detail/.+-(\d+)", search):
         id = re.findall(r".+-(\d+)", search)
         id = id[0]
         parse_bibliotheque(force_title=force_title, id=id)
+    elif search.lower() == "bibliotheque" or "/www.izneo.com/fr/bibliotheque" in search.lower():
+        parse_bibliotheque(force_title=force_title)
     elif re.match("^http[s]*://.*", search):
         new_results = 0
         # On est dans un cas où on a une URL de série.
