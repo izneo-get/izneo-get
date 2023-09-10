@@ -112,24 +112,28 @@ def parse_html(html, force_title=False):
     return new_results
 
 
-def parse_bibliotheque(force_title=False):
+def parse_bibliotheque(force_title=False, id: str = ""):
     url = "https://www.izneo.com/fr/api/web/library-v2/albums/order-date/"
+    items_per_page = 30
+    if id:
+        url = f"https://www.izneo.com/fr/api/web/library/{id}/albums/last-open/"
+        items_per_page = 24
     step = 0
     new_results = 1
     expected_albums = 1_000_000
-    while step * 30 <= expected_albums and new_results > 0:
+    while step * items_per_page <= expected_albums and new_results > 0:
         new_results = 0
-        tmp_url = url + str(step * 30) + "/30"
+        tmp_url = url + str(step * items_per_page) + f"/{items_per_page}"
         data = {
-            "text": "",
+            "search": "",
         }
         # r = s.post(url, allow_redirects=True, data=data)
         r = requests_retry_session(session=s).post(tmp_url, allow_redirects=True, data=data)
 
         data = json.loads(r.text)
-        if "totalAlbums" not in data:
+        if "totalAlbums" not in data and "albumsCount" not in data:
             continue
-        expected_albums = data["totalAlbums"]
+        expected_albums = data["totalAlbums"] if "totalAlbums" in data else data["albumsCount"]
         for album in data["albums"]:
             link = root_path + album["url"]
             title = album["title"]
@@ -239,8 +243,12 @@ if __name__ == "__main__":
     )
     s.cookies.set_cookie(cookie_obj)
 
-    if search.lower() == "bibliotheque" or "https://www.izneo.com/fr/bibliotheque" in search:
+    if search.lower() == "bibliotheque":
         parse_bibliotheque(force_title=force_title)
+    elif re.match(r"^http[s]://www.izneo.com/fr/bibliotheque/detail/.+-(\d+)", search):
+        id = re.findall(r".+-(\d+)", search)
+        id = id[0]
+        parse_bibliotheque(force_title=force_title, id=id)
     elif re.match("^http[s]*://.*", search):
         new_results = 0
         # On est dans un cas où on a une URL de série.
