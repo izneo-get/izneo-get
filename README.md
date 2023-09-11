@@ -32,7 +32,7 @@ Une fois les paramètres définis, terminer avec `>> DONE <<`.
 * `Filename pattern` : Le modèle utilisé pour le nom de fichier. Les mots clés entre `{}` seront remplacés par la valeur correspondante dans les informations du livre.
 * `Image format` : Le format des images.
 * `Image quality` : La qualité des images (uniquement si `Image format` est différent de `ORIGIN`).
-* `Output format` : Permet de dire si on souhaite avoir en sortie un répertoire avec des images (`IMAGE`), un fichier CBZ (`CBZ`) ou les deux (`BOTH`).
+* `Output format` : Permet de dire si on souhaite avoir en sortie un répertoire avec des images (`IMAGES`), un fichier CBZ (`CBZ`) ou les deux (`BOTH`).
 * `Pause (sec)` : Le temps d'attente en secondes entre 2 téléchargements d'image. Si `0`, les images seront téléchargées en parallèle.
 * `User agent` : La signature de navigateur à utiliser.
 * `Continue from existing` : Permet de reprendre un téléchargement interrompu (`True`) ou télécharger à nouveau même si les fichiers existent déjà (`False`).
