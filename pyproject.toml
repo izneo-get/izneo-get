@@ -18,7 +18,7 @@ opencv-python = "^4.7.0.72"
 beautifulsoup4 = "^4.12.2"
 
 [tool.poetry.group.dev.dependencies]
-Pillow = "^9.5.0"
+Pillow = "^10.0.1"
 
 [build-system]
 requires = ["poetry-core"]
