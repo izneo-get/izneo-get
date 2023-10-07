@@ -2,6 +2,10 @@
 
 ## izneo_get.py
 
+### Version 1.0.1 (2023-10-07)
+
+- [FIX] Compatibilité avec les fichiers de médiathèque.
+
 ### Version 1.0.0 (2023-09-09)
 
 - [NEW] Possibilité d'utiliser l'application en mode interactif.
