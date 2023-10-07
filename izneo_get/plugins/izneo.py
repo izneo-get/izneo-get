@@ -158,8 +158,10 @@ class Izneo(SiteProcessor):
             print("ERROR: Can't find pages in book infos.")
             return ""
 
-        nb_digits = max(3, len(str(len(book_infos.custom_fields["pages"]))))
+        nb_digits = max(3, len(str(book_infos.pages)))
         url = f"https://www.izneo.com/book/{book_id}/{page_num}?type=full" + (f"&{sign}" if sign else "")
+        if sign:
+            url = f"https://reader.izneo.com/read/{book_id}/{page_num}?quality=HD" + (f"&{sign}" if sign else "")
 
         # Si la page existe déjà sur le disque, on passe.
         page_txt = f"000000000{str(page_num + 1)}"[-nb_digits:]
@@ -189,9 +191,12 @@ class Izneo(SiteProcessor):
             return ""
 
         # Decode image.
-        key = book_infos.custom_fields["pages"][page_num]["key"]
-        iv = book_infos.custom_fields["pages"][page_num]["iv"]
-        uncrypted = Izneo.uncrypt_image(r.content, key, iv)
+        if sign:
+            uncrypted = r.content
+        else:
+            key = book_infos.custom_fields["pages"][page_num]["key"]
+            iv = book_infos.custom_fields["pages"][page_num]["iv"]
+            uncrypted = Izneo.uncrypt_image(r.content, key, iv)
         store_path = f"{save_path}/{title_used} {page_txt}.tmp"
         open(store_path, "wb").write(uncrypted)
 
@@ -286,7 +291,21 @@ class Izneo(SiteProcessor):
             allow_redirects=True,
             headers=self.headers,
         )
-        return json.loads(r.text)["data"]
+        data = json.loads(r.text)["data"]
+        if sign:
+            full_page = requests_retry_session(session=self.session).get(
+                f"https://reader.izneo.com/read/{book_id}",
+                cookies=cookies,
+                allow_redirects=True,
+                headers=self.headers,
+            )
+            if full_page.status_code == 200 and full_page.text:
+                if res := re.search(r"unrestrictedBoardsCount([\s])+=([\s\d]+);", full_page.text):
+                    total_pages = int(res[2])
+                    data["nbPage"] = total_pages
+                    data["state"] = "signed"
+                    data["pages"] = list(range(total_pages))
+        return data
 
     @lru_cache
     def _get_book_id(self) -> str:
