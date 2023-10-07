@@ -30,6 +30,7 @@ class Izneo(SiteProcessor):
     URL_PATTERNS: List[str] = [
         r"https://reader\.izneo\.com/read/(\d+)(\?exiturl=.+)?",
         r"https://www.izneo.com/(.+?)/(.+?)/(.+?)/(.+?)-(\d+)/(.+)-(\d+)",
+        r"https://www.izneo.com/(.+?)/(.+?)/(.+?)(\?exiturl=.+)?",
     ]
     url: str = ""
     config: Config
@@ -323,6 +324,8 @@ class Izneo(SiteProcessor):
         if res := re.search(".+-(.+)/read", tmp_url.split("?")[0]):
             book_id = res[1]
         elif res := re.search(".+-(.+)", tmp_url.split("?")[0]):
+            book_id = res[1]
+        elif res := re.search(".+/(.+)", self.url.split("?")[0]):
             book_id = res[1]
         return book_id
 
