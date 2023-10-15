@@ -2,6 +2,10 @@
 
 ## izneo_get.py
 
+### Version 1.0.2 (2023-10-15)
+
+- [FIX] Valeurs par défaut quand il n'y a pas d'information sur un livre.
+
 ### Version 1.0.1 (2023-10-07)
 
 - [FIX] Compatibilité avec les fichiers de médiathèque.
