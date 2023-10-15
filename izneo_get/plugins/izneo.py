@@ -263,22 +263,23 @@ class Izneo(SiteProcessor):
         if self._book_infos:
             return self._book_infos
         book_infos = self._download_book_infos()
-        title = clean_attribute(book_infos["title"])
-        subtitle = clean_attribute(book_infos["subtitle"])
-        read_direction = ReadDirection.RTOL if book_infos["readDirection"] == "rtl" else ReadDirection.LTOR
+        book_infos = book_infos if isinstance(book_infos, dict) else {}
+        title = clean_attribute(book_infos.get("title", ""))
+        subtitle = clean_attribute(book_infos.get("subtitle", ""))
+        read_direction = ReadDirection.RTOL if book_infos.get("readDirection", "") == "rtl" else ReadDirection.LTOR
         self._book_infos = BookInfos(
             title=title,
             subtitle=subtitle,
-            pages=int(book_infos["nbPage"]),
-            volume=book_infos["volume"],
-            chapter=book_infos["chapter"],
-            isbn=book_infos["ean"],
-            serie=book_infos["serie_name"],
-            genre=book_infos["gender_name"],
-            language=book_infos["userLang"],
+            pages=int(book_infos.get("nbPage", 0)),
+            volume=book_infos.get("volume", ""),
+            chapter=book_infos.get("chapter", ""),
+            isbn=book_infos.get("ean", ""),
+            serie=book_infos.get("serie_name", ""),
+            genre=book_infos.get("gender_name", ""),
+            language=book_infos.get("userLang", ""),
             read_direction=read_direction,
-            description=book_infos["synopsis"],
-            custom_fields={"pages": book_infos["pages"], "state": book_infos["state"]},
+            description=book_infos.get("synopsis", ""),
+            custom_fields={"pages": book_infos.get("pages", None), "state": book_infos.get("state", "")},
         )
         return self._book_infos
 
