@@ -96,6 +96,7 @@ class Izneo(SiteProcessor):
         """
         # Create session and cookie.
         self.session = requests.Session()
+        self.session.max_redirects = 10
         cookie_obj = requests.cookies.create_cookie(domain=".izneo.com", name="lang", value="fr")
         self.session.cookies.set_cookie(cookie_obj)
         cookie_obj = requests.cookies.create_cookie(
@@ -148,7 +149,10 @@ class Izneo(SiteProcessor):
             files_downloaded = self._download_all_pages(title_used, save_path)
         else:
             files_downloaded = asyncio.run(self._async_download_all_pages(title_used, save_path))
-        print(f"{len(files_downloaded)} pages downloaded")
+        count_empty = len([element for element in files_downloaded if not element])
+        print(f"{len(files_downloaded) - count_empty} pages downloaded")
+        if count_empty:
+            print(f"{count_empty} pages skipped")
         return save_path
 
     async def _async_download_page(self, page_num: int, title_used: str, save_path: str, pause_sec: int = 0) -> str:
@@ -181,14 +185,18 @@ class Izneo(SiteProcessor):
             return store_path_converted
 
         # r = s.get(url, cookies=s.cookies, allow_redirects=True, params=params, headers=headers)
-        r = await async_http_get(url, session=self.session, headers=self.headers)
+        try:
+            r = await async_http_get(url, session=self.session, headers=self.headers)
+        except requests.TooManyRedirects as e:
+            print(f"\n[ERROR] Page {page_num} unavailable: {e}")
+            return ""
 
         if r.status_code == 404:
             if page_num < book_infos.pages:
-                print(f"[WARNING] Can't download page {str(page_num + 1)} ({str(book_infos.pages)} pages expected)")
+                print(f"\n[ERROR] Can't download page {str(page_num + 1)} ({str(book_infos.pages)} pages expected)")
             return ""
         if r.encoding:
-            print(f"[WARNING] Page {page_num} unavailable")
+            print(f"\n[ERROR] Page {page_num} unavailable")
             return ""
 
         # Decode image.

@@ -2,6 +2,10 @@
 
 ## izneo_get.py
 
+### Version 1.0.3 (2023-11-13)
+
+- [FIX] Gestion des erreurs quand une page n'est pas disponible sur Izneo.
+
 ### Version 1.0.2 (2023-10-15)
 
 - [FIX] Valeurs par défaut quand il n'y a pas d'information sur un livre.
