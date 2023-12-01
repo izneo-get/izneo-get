@@ -68,6 +68,10 @@ def main() -> None:
     url_list = get_all_urls(url)
 
     for url, forced_title in url_list:
+        if url[0] == '"' and url[-1] == '"':
+            url = url[1:-1]
+        print(f"Processing {url}")
+        # print("Download started")
         result = ""
         save_path = url
         if action in [Action.INFOS, Action.DOWNLOAD, Action.PROCESS]:
