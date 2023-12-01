@@ -2,6 +2,10 @@
 
 ## izneo_get.py
 
+### Version 1.0.4 (2023-12-01)
+
+- [FIX] Nommage de l'archive ZIP.
+
 ### Version 1.0.3 (2023-11-13)
 
 - [FIX] Gestion des erreurs quand une page n'est pas disponible sur Izneo.
