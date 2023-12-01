@@ -173,7 +173,7 @@ def get_name_from_pattern(pattern: str, infos: BookInfos) -> str:
 def create_cbz(source_folder: str) -> str:
     print("Create CBZ...")
     zip_filepath = get_unique_name(f"{source_folder}.zip")
-    shutil.make_archive(zip_filepath.strip(".zip"), "zip", source_folder)
+    shutil.make_archive(re.sub(".zip$", "", zip_filepath, flags=re.IGNORECASE), "zip", source_folder)
     cbz_filepath = get_unique_name(f"{source_folder}.cbz")
     os.rename(zip_filepath, cbz_filepath)
     print(f"CBZ created: {cbz_filepath}")
