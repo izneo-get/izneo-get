@@ -102,7 +102,7 @@ def main() -> None:
             OutputFormat.BOTH,
         ]:
             if os.path.isdir(save_path):
-                expected_cbz_name = re.sub(".zip$", "", save_path, flags=re.IGNORECASE) + ".cbz"
+                expected_cbz_name = save_path + ".cbz"
                 if config.continue_from_existing and os.path.exists(expected_cbz_name):
                     print(f'File "{expected_cbz_name}" already exists.')
                 else:
@@ -110,7 +110,7 @@ def main() -> None:
                 result = expected_cbz_name
                 # If needed, we delete the folder.
                 if config.output_format == OutputFormat.CBZ:
-                    shutil.rmtree(re.sub(".zip$", "", save_path, flags=re.IGNORECASE))
+                    shutil.rmtree(save_path)
             else:
                 print(f'ERROR: "{save_path}" is not a folder.')
 
