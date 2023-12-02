@@ -2,9 +2,9 @@
 
 ## izneo_get.py
 
-### Version 1.0.4 (2023-12-01)
+### Version 1.0.5 (2023-12-01)
 
-- [FIX] Nommage de l'archive ZIP.
+- [FIX] Bug sur le traitement de l'extension ".zip".
 
 ### Version 1.0.3 (2023-11-13)
 
