@@ -237,6 +237,34 @@ ou
 python izneo_infos.py --output assassination-classroom-t1.xml https://www.izneo.com/fr/manga-et-simultrad/shonen/assassination-classroom-4744/assassination-classroom-t1-19197
 ```
 
+### izneo_basket
+
+#### Utilisation
+
+```cmd
+python izneo_basket.py [-h] [--session-id SESSION_ID] [--config CONFIG] url
+
+Script pour obtenir une liste de BDs Izneo à partir de la page panier fini.
+
+positional arguments:
+  url                La page de panier fini qui contient une liste de BDs
+
+options:
+  -h, --help            show this help message and exit
+  --session-id SESSION_ID, -s SESSION_ID
+                        L'identifiant de session
+  --config CONFIG       Fichier de configuration
+```
+
+Exemple :
+
+* Pour récupérer la liste des liens d'une page de panier fini (fichier de config présent)
+avec 1020304 le numéro de la commande :
+
+```cmd
+python izneo_basket.py https://www.izneo.com/fr/panier-fini/1020304
+```
+
 ## Installation
 
 ### Prérequis
