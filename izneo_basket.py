@@ -112,7 +112,7 @@ if __name__ == "__main__":
 
     if re.match(r"^http[s]://www.izneo.com/fr/panier-fin/(\d+)", url):
         new_results = 0
-        # On est dans un cas où on a une URL de série.
+        # On est dans un cas où on a une URL de panier.
         id = re.findall("(\d+)/", url)
         if not id:
             id = re.findall("(\d+)", url)
