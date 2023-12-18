@@ -111,10 +111,9 @@ if __name__ == "__main__":
     s.cookies.set_cookie(cookie_obj)
 
     if re.match(r"^http[s]://www.izneo.com/fr/panier-fin/(\d+)", url):
-        new_results = 0
         # On est dans un cas où on a une URL de panier.
         id = re.findall("(\d+)/", url)
         if not id:
             id = re.findall("(\d+)", url)
         id = id[0]
-        new_results += parse_from_id(s, id)
+        parse_from_id(s, id)
