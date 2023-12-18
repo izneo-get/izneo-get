@@ -57,6 +57,11 @@ def parse_from_id(session, id):
     r = requests_retry_session(session=session).get(url, allow_redirects=True)
     content = json.loads(r.text)
     new_results = 0
+
+    if 'error' in content:
+        print(f'Error: {content["error"]}')
+        return 0
+
     for vol in content["albums"]:
         link = root_path + vol["url"]
         title = vol["title"]
@@ -96,7 +101,7 @@ if __name__ == "__main__":
     session_id = get_param_or_default(config, "session_id", "", args.session_id)
     url = args.url
 
-# Création d'une session et création du cookie.
+    # Création d'une session et création du cookie.
     s = requests.Session()
     cookie_obj = requests.cookies.create_cookie(domain=".izneo.com", name="lang", value="fr")
     s.cookies.set_cookie(cookie_obj)
@@ -106,10 +111,9 @@ if __name__ == "__main__":
     s.cookies.set_cookie(cookie_obj)
 
     if re.match(r"^http[s]://www.izneo.com/fr/panier-fin/(\d+)", url):
-        new_results = 0
-        # On est dans un cas où on a une URL de série.
+        # On est dans un cas où on a une URL de panier.
         id = re.findall("(\d+)/", url)
         if not id:
             id = re.findall("(\d+)", url)
         id = id[0]
-        new_results += parse_from_id(s, id)
+        parse_from_id(s, id)
