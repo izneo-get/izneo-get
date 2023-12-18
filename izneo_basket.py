@@ -101,7 +101,7 @@ if __name__ == "__main__":
     session_id = get_param_or_default(config, "session_id", "", args.session_id)
     url = args.url
 
-# Création d'une session et création du cookie.
+    # Création d'une session et création du cookie.
     s = requests.Session()
     cookie_obj = requests.cookies.create_cookie(domain=".izneo.com", name="lang", value="fr")
     s.cookies.set_cookie(cookie_obj)
