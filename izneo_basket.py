@@ -4,14 +4,14 @@ __version__ = "0.08.0"
 Source : https://github.com/izneo-get/izneo-get
 
 Ce script permet de récupérer une liste d'URLS sur https://www.izneo.com/fr/ en
-fonction d'une page de panier fini.
+fonction d'une page de panier fin.
 
 usage: izneo_basket.py [-h] [--session-id SESSION_ID] [--config CONFIG] url
 
 Script pour obtenir une liste de BDs Izneo.
 
 positional arguments:
-  url                La page de panier fini qui contient une liste de BDs
+  url                La page de panier fin qui contient une liste de BDs
 
 options:
   -h, --help            show this help message and exit

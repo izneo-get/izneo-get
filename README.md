@@ -244,10 +244,10 @@ python izneo_infos.py --output assassination-classroom-t1.xml https://www.izneo.
 ```cmd
 python izneo_basket.py [-h] [--session-id SESSION_ID] [--config CONFIG] url
 
-Script pour obtenir une liste de BDs Izneo à partir de la page panier fini.
+Script pour obtenir une liste de BDs Izneo à partir de la page panier fin.
 
 positional arguments:
-  url                La page de panier fini qui contient une liste de BDs
+  url                La page de panier fin qui contient une liste de BDs
 
 options:
   -h, --help            show this help message and exit
@@ -258,11 +258,11 @@ options:
 
 Exemple :
 
-* Pour récupérer la liste des liens d'une page de panier fini (fichier de config présent)
+* Pour récupérer la liste des liens d'une page de panier fin (fichier de config présent)
 avec 1020304 le numéro de la commande :
 
 ```cmd
-python izneo_basket.py https://www.izneo.com/fr/panier-fini/1020304
+python izneo_basket.py https://www.izneo.com/fr/panier-fin/1020304
 ```
 
 ## Installation
