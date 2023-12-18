@@ -57,6 +57,11 @@ def parse_from_id(session, id):
     r = requests_retry_session(session=session).get(url, allow_redirects=True)
     content = json.loads(r.text)
     new_results = 0
+
+    if 'error' in content:
+        print(f'Error: {content["error"]}')
+        return 0
+
     for vol in content["albums"]:
         link = root_path + vol["url"]
         title = vol["title"]
