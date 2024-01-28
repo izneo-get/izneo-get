@@ -25,11 +25,11 @@ import re
 from http.cookiejar import LWPCookieJar
 
 
-class Archives(SiteProcessor):
+class Archive(SiteProcessor):
     URL_PATTERNS = ["https://archive.org/details/.*"]
     url: str = ""
     config: Config
-    cache_file: str = "archives.cache"
+    cache_file: str = "archive.cache"
 
     session: Optional[requests.Session] = None
     headers: Dict[str, str] = {}
@@ -41,7 +41,7 @@ class Archives(SiteProcessor):
 
     @staticmethod
     def is_valid_url(url: str) -> bool:
-        return any(re.match(pattern, url) is not None for pattern in Archives.URL_PATTERNS)
+        return any(re.match(pattern, url) is not None for pattern in Archive.URL_PATTERNS)
 
     def authenticate(self) -> None:
         if self.config.authentication_from_cache:
@@ -209,5 +209,5 @@ class Archives(SiteProcessor):
         return book_infos.custom_fields.get("book_id", "") if book_infos.custom_fields else ""
 
 
-def init(url: str = "", config: Optional[Config] = None) -> Archives:
-    return Archives(url, config)
+def init(url: str = "", config: Optional[Config] = None) -> Archive:
+    return Archive(url, config)

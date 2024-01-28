@@ -8,20 +8,20 @@ from izneo_get.config import OutputFormat
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from izneo_get.plugins.archives import Archives
+from izneo_get.plugins.archive import Archive
 from izneo_get.book_infos import BookInfos
 
 
 def test_is_valid_url():
-    processor = Archives()
+    processor = Archive()
     assert processor.is_valid_url("https://archive.org/details/id") == True
     assert processor.is_valid_url("https://archive.org/details/id/something/else") == True
     assert processor.is_valid_url("dummy") == False
 
 
 def test_authenticate_from_email():
-    processor = Archives()
-    processor._authenticate_from_email("archive.org@e-courrier.eu", "plop")
+    processor = Archive()
+    processor._authenticate_from_email("plip", "plop")
     assert processor.session is not None
 
 
