@@ -45,6 +45,7 @@ def test_download():
     processor.get_book_infos()
     processor._book_infos.custom_fields["pages"] = processor._book_infos.custom_fields["pages"][:2]
     processor._book_infos.custom_fields["state"] = "free"
+    processor._book_infos.page_urls = processor._book_infos.page_urls[:2]
     name = "dummy"
     downloaded = processor.download(name)
     assert downloaded == f"{output_path}/{name}"
@@ -78,7 +79,9 @@ def test_async_download_page():
     processor = Izneo(url)
     # processor.__init_session("123456")
     title = "test"
-    res: str = asyncio.run(processor._async_download_page(0, title, output_path))
+    res: str = asyncio.run(
+        processor._async_download_page(0, "https://www.izneo.com/book/4707/0?type=full", title, output_path)
+    )
     assert res == "tests/output/test 001.jpeg"
     assert os.path.exists(res)
     assert os.path.isfile(res)
@@ -93,6 +96,7 @@ def test_async_download_all_pages():
     processor = Izneo(url)
     processor.get_book_infos()
     processor._book_infos.custom_fields["pages"] = processor._book_infos.custom_fields["pages"][:2]
+    processor._book_infos.page_urls = processor._book_infos.page_urls[:2]
     # processor.__init_session("123456")
     title = "test"
     res: str = asyncio.run(processor._async_download_all_pages(title, output_path))
@@ -111,6 +115,7 @@ def test_download_all_pages():
     processor = Izneo(url)
     processor.get_book_infos()
     processor._book_infos.custom_fields["pages"] = processor._book_infos.custom_fields["pages"][:2]
+    processor._book_infos.page_urls = processor._book_infos.page_urls[:2]
     # processor.__init_session("123456")
     title = "test"
     res: List[str] = processor._download_all_pages(title, output_path)

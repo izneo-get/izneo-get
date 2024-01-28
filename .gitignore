@@ -15,6 +15,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 *.build/
+*.onefile-build/
 *.dist/
 
 # C extensions
