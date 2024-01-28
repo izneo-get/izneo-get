@@ -5,8 +5,10 @@ import glob
 import html
 import io
 import os
+import random
 import re
 import shutil
+import string
 import cv2
 import inquirer
 import numpy as np
@@ -97,6 +99,15 @@ def http_get(
 ) -> requests.Response:
     cookies = session.cookies if session else None
     return requests_retry_session(session=session).get(
+        url, cookies=cookies, allow_redirects=True, headers=headers, **kwargs
+    )
+
+
+def http_post(
+    url: str, session: Optional[Session] = None, headers: Optional[Dict[str, str]] = None, **kwargs: Optional[Any]
+) -> requests.Response:
+    cookies = session.cookies if session else None
+    return requests_retry_session(session=session).post(
         url, cookies=cookies, allow_redirects=True, headers=headers, **kwargs
     )
 
@@ -321,3 +332,8 @@ def question_yes_no(message: str, default: bool = True, carousel: bool = True) -
     ]
     answer: Dict[str, bool] = inquirer.prompt(questions)
     return answer["answer"]
+
+
+def generate_random_string(length: int) -> str:
+    characters = string.ascii_letters + string.digits
+    return "".join(random.choice(characters) for _ in range(length))

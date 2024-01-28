@@ -1,6 +1,6 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 
 class ReadDirection(Enum):
@@ -24,10 +24,11 @@ class BookInfos:
     description: str = ""
     publisher: str = ""
     read_direction: ReadDirection = ReadDirection.LTOR
+    page_urls: List[str] = field(default_factory=list)
     custom_fields: Optional[Dict[str, Any]] = None
 
     def __str__(self) -> str:
-        ignore_attrs = {"custom_fields", "description", "read_direction"}
+        ignore_attrs = {"custom_fields", "description", "read_direction", "page_urls"}
         infos = "\n".join(
             f"{{{attr}}}: {str(self.__dict__[attr])}"
             for attr in self.__dict__
