@@ -33,17 +33,17 @@ Ce menu se navigue avec les flèches du clavier et la touche `Entrée` pour vali
 Pour en faire les valeurs par défaut, on peut les enregistrer dans le fichier de config avec l'option `Save this config as default`.  
 Une fois les paramètres définis, terminer avec `>> DONE <<`.  
 
-* `Output folder` : Le réprtoire dans lequel sera enregistré les fichiers.
-* `Filename pattern` : Le modèle utilisé pour le nom de fichier. Les mots clés entre `{}` seront remplacés par la valeur correspondante dans les informations du livre.
-* `Image format` : Le format des images.
-* `Image quality` : La qualité des images (uniquement si `Image format` est différent de `ORIGIN`).
-* `Output format` : Permet de dire si on souhaite avoir en sortie un répertoire avec des images (`IMAGES`), un fichier CBZ (`CBZ`) ou les deux (`BOTH`).
-* `Pause (sec)` : Le temps d'attente en secondes entre 2 téléchargements d'image. Si `0`, les images seront téléchargées en parallèle.
-* `User agent` : La signature de navigateur à utiliser.
-* `Continue from existing` : Permet de reprendre un téléchargement interrompu (`True`) ou télécharger à nouveau même si les fichiers existent déjà (`False`).
-* `Authentication from cache` : Permet d'utiliser le fichier de cache pour s'authentifier (`True`). Si `False`, les informations de connexion seront demandées.
-* `Save this config as default` : Enregistrer cette configuration pour qu'elle soit utilisée par défaut.
-* `>> DONE <<` : Passer à l'étape suivante.
+- `Output folder` : Le réprtoire dans lequel sera enregistré les fichiers.
+- `Filename pattern` : Le modèle utilisé pour le nom de fichier. Les mots clés entre `{}` seront remplacés par la valeur correspondante dans les informations du livre.
+- `Image format` : Le format des images.
+- `Image quality` : La qualité des images (uniquement si `Image format` est différent de `ORIGIN`).
+- `Output format` : Permet de dire si on souhaite avoir en sortie un répertoire avec des images (`IMAGES`), un fichier CBZ (`CBZ`) ou les deux (`BOTH`).
+- `Pause (sec)` : Le temps d'attente en secondes entre 2 téléchargements d'image. Si `0`, les images seront téléchargées en parallèle.
+- `User agent` : La signature de navigateur à utiliser.
+- `Continue from existing` : Permet de reprendre un téléchargement interrompu (`True`) ou télécharger à nouveau même si les fichiers existent déjà (`False`).
+- `Authentication from cache` : Permet d'utiliser le fichier de cache pour s'authentifier (`True`). Si `False`, les informations de connexion seront demandées.
+- `Save this config as default` : Enregistrer cette configuration pour qu'elle soit utilisée par défaut.
+- `>> DONE <<` : Passer à l'étape suivante.
   
 Le programme demande l'action à effectuer :  
 
@@ -57,12 +57,12 @@ Le programme demande l'action à effectuer :
    EXIT
 ```
 
-* `Download + Convert + Pack` : Télécharger le livre dans `Output folder` avec un nom basé sur `Filename pattern`, convertir les images au format attendu (`Image format`, `Image quality`) et créer l'archive au format attendu (`Output format`).
-* `Get book infos only` : Récupérer et afficher les informations du livre uniquement.
-* `Download book only` : Télécharger le livre uniquement, sans modifier les images.
-* `Convert book only` : Convertir les images d'un répertoire au format attendu uniquement.
-* `Pack book only` : Créer l'archive au format attendu uniquement.
-* `EXIT` : Sortir du programme sans rien faire.
+- `Download + Convert + Pack` : Télécharger le livre dans `Output folder` avec un nom basé sur `Filename pattern`, convertir les images au format attendu (`Image format`, `Image quality`) et créer l'archive au format attendu (`Output format`).
+- `Get book infos only` : Récupérer et afficher les informations du livre uniquement.
+- `Download book only` : Télécharger le livre uniquement, sans modifier les images.
+- `Convert book only` : Convertir les images d'un répertoire au format attendu uniquement.
+- `Pack book only` : Créer l'archive au format attendu uniquement.
+- `EXIT` : Sortir du programme sans rien faire.
 
 ## Utilisation en ligne de commande
 
@@ -98,25 +98,25 @@ options:
 
 Exemple :  
 
-* Pour récupérer la BD dans un répertoire d'images (fichier de config présent) :  
+- Pour récupérer la BD dans un répertoire d'images (fichier de config présent) :  
 
 ```cmd
 python izneo_get.py https://www.izneo.com/fr/manga-et-simultrad/shonen/assassination-classroom-4744/assassination-classroom-t1-19197
 ```
 
-* Pour récupérer la BD dans une archive CBZ en forçant le titre (fichier de config présent) :  
+- Pour récupérer la BD dans une archive CBZ en forçant le titre (fichier de config présent) :  
 
 ```cmd
 python izneo_get.py https://www.izneo.com/fr/manga-et-simultrad/shonen/assassination-classroom-4744/assassination-classroom-t1-19197 --output-format cbz --output-filename "[Yusei Matsui] Assassination Classroom - Tome 1"
 ```
 
-* Pour récupérer la BD dans une archive CBZ avec des images converties en WEBP (fichier de config présent) :  
+- Pour récupérer la BD dans une archive CBZ avec des images converties en WEBP (fichier de config présent) :  
 
 ```cmd
 python izneo_get.py https://www.izneo.com/fr/manga-et-simultrad/shonen/assassination-classroom-4744/assassination-classroom-t1-19197 --output-format cbz --image-format webp --image-quality 70
 ```
 
-* Récupérer tous les tomes d'une série :  
+- Récupérer tous les tomes d'une série :  
 
 ```cmd
 python izneo_list.py --full-only URL > input.txt
@@ -142,7 +142,7 @@ Ces valeurs peuvent être stockées dans le fichier de configuration "izneo_get_
 
 ### izneo_list
 
-#### Utilisation
+#### Utilisation (izneo_list)
 
 ```cmd
 python izneo_list.py [-h] [--session-id SESSION_ID] [--config CONFIG] [--pause PAUSE] [--full-only] [--force-title] search
@@ -164,19 +164,19 @@ options:
 
 Exemple :  
 
-* Pour récupérer la liste des liens d'une série (fichier de config présent) :  
+- Pour récupérer la liste des liens d'une série (fichier de config présent) :  
 
 ```cmd
 python izneo_list.py https://www.izneo.com/fr/manga-et-simultrad/shonen/naruto-567
 ```
 
-* Pour récupérer la liste des liens d'une série, dans la limite des albums complets inclus dans l'abonnement en ajoutant le tag "--force-title" (fichier de config présent) :  
+- Pour récupérer la liste des liens d'une série, dans la limite des albums complets inclus dans l'abonnement en ajoutant le tag "--force-title" (fichier de config présent) :  
 
 ```cmd
 python izneo_list.py https://www.izneo.com/fr/manga-et-simultrad/shonen/naruto-567 --full-only --force-title
 ```
 
-* Pour récupérer la liste des liens de séries qui correspondent à la rechercher "largo" (fichier de config présent) :  
+- Pour récupérer la liste des liens de séries qui correspondent à la rechercher "largo" (fichier de config présent) :  
 
 ```cmd
 python izneo_list.py "largo"
@@ -184,7 +184,7 @@ python izneo_list.py "largo"
 
 ### izneo_infos
 
-#### Utilisation
+#### Utilisation (izneo_infos)
 
 ```cmd
 python izneo_infos.py [-h] [--output OUTPUT_FILE] URL
@@ -202,7 +202,7 @@ options:
 
 Exemple :  
 
-* Pour afficher les informations d'une BD :  
+- Pour afficher les informations d'une BD :  
 
 ```cmd
 python izneo_infos.py https://www.izneo.com/fr/manga-et-simultrad/shonen/assassination-classroom-4744/assassination-classroom-t1-19197
@@ -230,7 +230,7 @@ Les élèves de la classe 3-E du collège de Kunugigaoka sont des assassins en h
 Découvrez le quotidien insolite d'un drôle de professeur et de ses élèves !!
 ```
 
-* Pour enregistrer les informations d'une BD dans un fichier :  
+- Pour enregistrer les informations d'une BD dans un fichier :  
 
 ```cmd
 python izneo_infos.py --output assassination-classroom-t1.json https://www.izneo.com/fr/manga-et-simultrad/shonen/assassination-classroom-4744/assassination-classroom-t1-19197
@@ -244,7 +244,7 @@ python izneo_infos.py --output assassination-classroom-t1.xml https://www.izneo.
 
 ### izneo_basket
 
-#### Utilisation
+#### Utilisation (izneo_basket)
 
 ```cmd
 python izneo_basket.py [-h] [--session-id SESSION_ID] [--config CONFIG] url
@@ -263,7 +263,7 @@ options:
 
 Exemple :
 
-* Pour récupérer la liste des liens d'une page de panier fin (fichier de config présent)
+- Pour récupérer la liste des liens d'une page de panier fin (fichier de config présent)
 avec 1020304 le numéro de la commande :
 
 ```cmd
@@ -274,9 +274,9 @@ python izneo_basket.py https://www.izneo.com/fr/panier-fin/1020304
 
 ### Prérequis
 
-* Python 3.10+ (non testé avec les versions précédentes)
-* `poetry` (recommandé) ou `pip`
-* Librairies SSL
+- Python 3.10+ (non testé avec les versions précédentes)
+- `poetry` (recommandé) ou `pip`
+- Librairies SSL
 
 #### Sous Windows
 
@@ -288,21 +288,21 @@ et suivez les instructions d'installation de Python 3.
 
 ##### Librairies SSL
 
-* Vous pouvez essayer de les installer avec la commande :  
+- Vous pouvez essayer de les installer avec la commande :  
 
 ```cmd
 pip install pyopenssl
 ```
 
-* Vous pouvez télécharger [OpenSSL pour Windows](http://gnuwin32.sourceforge.net/packages/openssl.htm).  
+- Vous pouvez télécharger [OpenSSL pour Windows](http://gnuwin32.sourceforge.net/packages/openssl.htm).  
 
 #### Sous Linux
 
 Si vous êtes sous Linux, vous n'avez pas besoin de moi pour installer Python, Pip ou SSL...  
 
-### Installation
+### Installation (sous Linux)
 
-* En ligne de commande, clonez le repo :  
+- En ligne de commande, clonez le repo :  
 
 ```cmd
 git clone https://github.com/izneo-get/izneo-get.git
@@ -311,13 +311,13 @@ cd izneo-get
 
 #### Avec poetry (recommandé)
 
-* Créez un environnement virtuel Python dédié :  
+- Créez un environnement virtuel Python dédié :  
 
 ```cmd
 poetry shell
 ```
 
-* Installez les dépendances :  
+- Installez les dépendances :  
 
 ```cmd
 poetry install
@@ -325,7 +325,7 @@ poetry install
 
 #### Avec pip
 
-* Créez un environnement virtuel Python dédié :  
+- Créez un environnement virtuel Python dédié :  
 
 ```cmd
 python -m venv env
@@ -333,7 +333,7 @@ env\Scripts\activate
 python -m pip install --upgrade pip
 ```
 
-* Installez les dépendances :  
+- Installez les dépendances :  
 
 ```cmd
 python -m pip install -r requirements.txt
@@ -358,4 +358,4 @@ python -m pip install pytest
   
 ## Alternative sans installer Python (sous Windows uniquement)  
   
-* Vous pouvez télécharger uniquement le [binaire Windows](https://github.com/izneo-get/izneo-get/releases/latest) (expérimental).  
+- Vous pouvez télécharger uniquement le [binaire Windows](https://github.com/izneo-get/izneo-get/releases/latest) (expérimental).  
