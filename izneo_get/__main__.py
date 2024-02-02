@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-__version__ = "1.0.5"
+__version__ = "1.1.0"
 """
 Source : https://github.com/izneo-get/izneo-get
 
@@ -102,7 +102,7 @@ def main() -> None:
             OutputFormat.BOTH,
         ]:
             if os.path.isdir(save_path):
-                expected_cbz_name = save_path + ".cbz"
+                expected_cbz_name = f"{save_path}.cbz"
                 if config.continue_from_existing and os.path.exists(expected_cbz_name):
                     print(f'File "{expected_cbz_name}" already exists.')
                 else:
@@ -114,8 +114,8 @@ def main() -> None:
             else:
                 print(f'ERROR: "{save_path}" is not a folder.')
 
-        # if action in [Action.DOWNLOAD, Action.CONVERT, Action.PACK, Action.PROCESS]:
-        #     print(f'{url} processed as "{result}"')
+            # if action in [Action.DOWNLOAD, Action.CONVERT, Action.PACK, Action.PROCESS]:
+            #     print(f'{url} processed as "{result}"')
 
     print("Done!")
     if is_command_line:

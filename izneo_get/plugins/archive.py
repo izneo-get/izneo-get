@@ -50,6 +50,7 @@ class Archive(SiteProcessor):
             self._authenticate_from_prompt()
 
     def _authenticate_from_prompt(self) -> None:
+        print('INFO: Authentication to "archive.org" required.')
         email = ""
         while not email:
             email = input("Email: ")
@@ -108,7 +109,8 @@ class Archive(SiteProcessor):
         book_infos = self._download_book_infos()
         book_infos = book_infos if isinstance(book_infos, dict) else {}
         title = clean_attribute(book_infos["brOptions"].get("bookTitle", ""))
-        subtitle = clean_attribute(book_infos["brOptions"].get("subPrefix", ""))
+        # subtitle = clean_attribute(book_infos["brOptions"].get("subPrefix", ""))
+        subtitle = ""
         read_direction = (
             ReadDirection.RTOL if book_infos["brOptions"].get("pageProgression", "") == "rl" else ReadDirection.LTOR
         )
