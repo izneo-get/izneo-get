@@ -4,6 +4,11 @@ Ce script permet de récupérer une BD présente sur `https://www.izneo.com/fr/`
 Le but est de pouvoir lire une BD sur un support non compatible avec les applications fournies par Izneo.  
 Il est évident que les BD ne doivent en aucun cas être conservées une fois la lecture terminée ou lorsque votre abonnement ne vous permet plus de la lire.  
 
+Sites compatibles :
+
+- <https://archive.org/>
+- <https://www.izneo.com/fr/>
+
 ## Utilisation en mode interactif
 
 Il est possible de lancer le programme sans aucun argument.  

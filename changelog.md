@@ -2,6 +2,10 @@
 
 ## izneo_get.py
 
+### Version 1.1.0 (2024-02-02)
+
+- [NEW] Support for books on `archive.org`.
+
 ### Version 1.0.5 (2023-12-01)
 
 - [FIX] Bug sur le traitement de l'extension ".zip".
