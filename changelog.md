@@ -4,7 +4,7 @@
 
 ### Version 1.1.0 (2024-02-02)
 
-- [NEW] Support for books on `archive.org`.
+- [NEW] Possibilité de télécharger les livres du site  `archive.org`.
 
 ### Version 1.0.5 (2023-12-01)
 
