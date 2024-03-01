@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 """
 Source : https://github.com/izneo-get/izneo-get
 
@@ -68,6 +68,10 @@ def main() -> None:
     url_list = get_all_urls(url)
 
     for url, forced_title in url_list:
+        if url[0] == '"' and url[-1] == '"':
+            url = url[1:-1]
+        print(f"Processing {url}")
+        # print("Download started")
         result = ""
         save_path = url
         if action in [Action.INFOS, Action.DOWNLOAD, Action.PROCESS]:
@@ -98,7 +102,7 @@ def main() -> None:
             OutputFormat.BOTH,
         ]:
             if os.path.isdir(save_path):
-                expected_cbz_name = save_path.strip(".cbz") + ".cbz"
+                expected_cbz_name = f"{save_path}.cbz"
                 if config.continue_from_existing and os.path.exists(expected_cbz_name):
                     print(f'File "{expected_cbz_name}" already exists.')
                 else:
@@ -106,12 +110,12 @@ def main() -> None:
                 result = expected_cbz_name
                 # If needed, we delete the folder.
                 if config.output_format == OutputFormat.CBZ:
-                    shutil.rmtree(save_path.strip(".cbz"))
+                    shutil.rmtree(save_path)
             else:
                 print(f'ERROR: "{save_path}" is not a folder.')
 
-        # if action in [Action.DOWNLOAD, Action.CONVERT, Action.PACK, Action.PROCESS]:
-        #     print(f'{url} processed as "{result}"')
+            # if action in [Action.DOWNLOAD, Action.CONVERT, Action.PACK, Action.PROCESS]:
+            #     print(f'{url} processed as "{result}"')
 
     print("Done!")
     if is_command_line:

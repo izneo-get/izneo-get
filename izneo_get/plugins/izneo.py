@@ -30,6 +30,7 @@ class Izneo(SiteProcessor):
     URL_PATTERNS: List[str] = [
         r"https://reader\.izneo\.com/read/(\d+)(\?exiturl=.+)?",
         r"https://www.izneo.com/(.+?)/(.+?)/(.+?)/(.+?)-(\d+)/(.+)-(\d+)",
+        r"https://www.izneo.com/(.+?)/(.+?)/(.+?)(\?exiturl=.+)?",
     ]
     url: str = ""
     config: Config
@@ -95,6 +96,7 @@ class Izneo(SiteProcessor):
         """
         # Create session and cookie.
         self.session = requests.Session()
+        self.session.max_redirects = 10
         cookie_obj = requests.cookies.create_cookie(domain=".izneo.com", name="lang", value="fr")
         self.session.cookies.set_cookie(cookie_obj)
         cookie_obj = requests.cookies.create_cookie(
@@ -103,7 +105,6 @@ class Izneo(SiteProcessor):
         self.session.cookies.set_cookie(cookie_obj)
 
     def download(self, forced_title: Optional[str] = None) -> str:
-        print(f"URL: {self.url}")
         book_infos = self.get_book_infos()
 
         if book_infos.custom_fields and book_infos.custom_fields["state"] == "preview":
@@ -111,168 +112,55 @@ class Izneo(SiteProcessor):
             answer = question_yes_no("Continue anyway", default=False)
             if answer == False:
                 return ""
+        return super().download(forced_title)
 
-        # Si on n'a pas les informations de base, on arrête tout de suite.
-        if not book_infos.title or not book_infos.pages:
-            print("ERROR: Can't find book.")
-            return ""
-
-        # Création du répertoire de destination.
-        output_folder = self.create_output_folder(book_infos, self.config.output_folder)
-
-        title_used = self._get_title_to_use(book_infos)
-
-        if forced_title:
-            forced_title = get_name_from_pattern(forced_title, book_infos)
-            print(f'Download "{clean_name(title_used)}" as "{clean_name(forced_title)}"')
-            title_used = clean_name(forced_title)
-        else:
-            print(f'Download "{clean_name(title_used)}"')
-        save_path = f"{output_folder}/{clean_name(title_used)}"
-
-        print(f"{book_infos.pages} pages expected")
-
-        # Si l'archive existe déjà, on ne télécharge pas cette BD.
-        if (
-            self.config.continue_from_existing
-            and self.config.output_format == OutputFormat.CBZ
-            and os.path.exists(f"{save_path}.cbz")
-        ):
-            print(f'"{save_path}.cbz" already exists, skipping.')
-            return ""
-        self._create_destination_folder(save_path)
-
-        files_downloaded: List[str] = []
-        if self.config.pause_sec:
-            files_downloaded = self._download_all_pages(title_used, save_path)
-        else:
-            files_downloaded = asyncio.run(self._async_download_all_pages(title_used, save_path))
-        print(f"{len(files_downloaded)} pages downloaded")
-        return save_path
-
-    async def _async_download_page(self, page_num: int, title_used: str, save_path: str, pause_sec: int = 0) -> str:
-        book_id = self._get_book_id()
-        sign = self._get_signature()
+    def post_process_image_content(self, content: bytes, page_num: int = 0) -> bytes:
         book_infos = self.get_book_infos()
-        if not book_infos.custom_fields or not book_infos.custom_fields["pages"]:
-            print("ERROR: Can't find pages in book infos.")
-            return ""
-
-        nb_digits = max(3, len(str(len(book_infos.custom_fields["pages"]))))
-        url = f"https://www.izneo.com/book/{book_id}/{page_num}?type=full" + (f"&{sign}" if sign else "")
-
-        # Si la page existe déjà sur le disque, on passe.
-        page_txt = f"000000000{str(page_num + 1)}"[-nb_digits:]
-        store_path = f"{save_path}/{title_used} {page_txt}.tmp"
-        store_path_converted = ""
-        if self.config.image_format == ImageFormat.WEBP:
-            store_path_converted = f"{save_path}/{title_used} {page_txt}.webp"
-        if self.config.image_format == ImageFormat.JPEG:
-            store_path_converted = f"{save_path}/{title_used} {page_txt}.jpeg"
-        if (
-            self.config.continue_from_existing
-            and self.config.image_format in {ImageFormat.JPEG, ImageFormat.WEBP}
-            and os.path.exists(store_path_converted)
-            and os.path.getsize(store_path_converted)
-        ):
-            return store_path_converted
-
-        # r = s.get(url, cookies=s.cookies, allow_redirects=True, params=params, headers=headers)
-        r = await async_http_get(url, session=self.session, headers=self.headers)
-
-        if r.status_code == 404:
-            if page_num < book_infos.pages:
-                print(f"[WARNING] Can't download page {str(page_num + 1)} ({str(book_infos.pages)} pages expected)")
-            return ""
-        if r.encoding:
-            print(f"[WARNING] Page {page_num} unavailable")
-            return ""
-
-        # Decode image.
+        if self._get_signature():
+            return content
+        if not book_infos or not book_infos.custom_fields:
+            return content
         key = book_infos.custom_fields["pages"][page_num]["key"]
         iv = book_infos.custom_fields["pages"][page_num]["iv"]
-        uncrypted = Izneo.uncrypt_image(r.content, key, iv)
-        store_path = f"{save_path}/{title_used} {page_txt}.tmp"
-        open(store_path, "wb").write(uncrypted)
-
-        image_format = get_image_type(uncrypted)
-        store_path_converted = f"{save_path}/{title_used} {page_txt}.{image_format}"
-        if os.path.exists(store_path_converted):
-            os.remove(store_path_converted)
-        os.rename(store_path, store_path_converted)
-
-        # # Convert image if needed.
-        # if self.config.image_format:
-        #     convert_image_if_needed(
-        #         store_path_converted, store_path_converted, self.config.image_format, self.config.image_quality
-        #     )
-
-        if pause_sec:
-            await asyncio.sleep(pause_sec)
-        return store_path_converted
+        return Izneo.uncrypt_image(content, key, iv)
 
     @staticmethod
     def uncrypt_image(crypted_content: bytes, key: str, iv: str) -> bytes:
         aes = AES.new(base64.b64decode(key), AES.MODE_CBC, base64.b64decode(iv))
         return aes.decrypt(crypted_content)
 
-    async def _async_download_all_pages(self, title_used: str, save_path: str) -> List[str]:
-        book_infos = self.get_book_infos()
-        if not book_infos.custom_fields or not book_infos.custom_fields["pages"]:
-            return []
-        return await tqdm.gather(
-            *[
-                self._async_download_page(page, title_used, save_path)
-                for page in range(len(book_infos.custom_fields["pages"]))
-            ],
-            desc="Download pages",
-            bar_format=BAR_FORMAT,
-        )
-
-    def _download_all_pages(self, title_used: str, save_path: str) -> List[str]:
-        book_infos = self.get_book_infos()
-        downloaded_pages: List[str] = []
-        if not book_infos.custom_fields or not book_infos.custom_fields["pages"]:
-            return downloaded_pages
-        for page in tqdm(
-            range(len(book_infos.custom_fields["pages"])),
-            desc="Download pages",
-            bar_format=BAR_FORMAT,
-        ):
-            res = asyncio.run(self._async_download_page(page, title_used, save_path, self.config.pause_sec or 0))
-            downloaded_pages.append(res)
-        return downloaded_pages
-
-    def _create_destination_folder(self, save_path: str) -> None:
-        if not os.path.exists(save_path):
-            os.mkdir(save_path)
-        print(f"Destination : {save_path}")
-
-    def _get_title_to_use(self, book_infos: BookInfos) -> str:
-        return get_name_from_pattern(self.config.output_filename or "", book_infos) or self.get_default_title(
-            book_infos
-        )
-
     def get_book_infos(self) -> BookInfos:
         if self._book_infos:
             return self._book_infos
+        book_id = self._get_book_id()
+        sign = self._get_signature()
+
         book_infos = self._download_book_infos()
-        title = clean_attribute(book_infos["title"])
-        subtitle = clean_attribute(book_infos["subtitle"])
-        read_direction = ReadDirection.RTOL if book_infos["readDirection"] == "rtl" else ReadDirection.LTOR
+        book_infos = book_infos if isinstance(book_infos, dict) else {}
+        title = clean_attribute(book_infos.get("title", ""))
+        subtitle = clean_attribute(book_infos.get("subtitle", ""))
+        read_direction = ReadDirection.RTOL if book_infos.get("readDirection", "") == "rtl" else ReadDirection.LTOR
+        page_urls = []
+        for page_num, _ in enumerate(book_infos.get("pages", None)):
+            url = f"https://www.izneo.com/book/{book_id}/{page_num}?type=full" + (f"&{sign}" if sign else "")
+            if sign:
+                url = f"https://reader.izneo.com/read/{book_id}/{page_num}?quality=HD" + (f"&{sign}" if sign else "")
+            page_urls.append(url)
+
         self._book_infos = BookInfos(
             title=title,
             subtitle=subtitle,
-            pages=int(book_infos["nbPage"]),
-            volume=book_infos["volume"],
-            chapter=book_infos["chapter"],
-            isbn=book_infos["ean"],
-            serie=book_infos["serie_name"],
-            genre=book_infos["gender_name"],
-            language=book_infos["userLang"],
+            pages=int(book_infos.get("nbPage", 0)),
+            volume=book_infos.get("volume", ""),
+            chapter=book_infos.get("chapter", ""),
+            isbn=book_infos.get("ean", ""),
+            serie=book_infos.get("serie_name", ""),
+            genre=book_infos.get("gender_name", ""),
+            language=book_infos.get("userLang", ""),
             read_direction=read_direction,
-            description=book_infos["synopsis"],
-            custom_fields={"pages": book_infos["pages"], "state": book_infos["state"]},
+            description=book_infos.get("synopsis", ""),
+            page_urls=page_urls,
+            custom_fields={"pages": book_infos.get("pages", None), "state": book_infos.get("state", "")},
         )
         return self._book_infos
 
@@ -286,7 +174,21 @@ class Izneo(SiteProcessor):
             allow_redirects=True,
             headers=self.headers,
         )
-        return json.loads(r.text)["data"]
+        data = json.loads(r.text)["data"]
+        if sign:
+            full_page = requests_retry_session(session=self.session).get(
+                f"https://reader.izneo.com/read/{book_id}",
+                cookies=cookies,
+                allow_redirects=True,
+                headers=self.headers,
+            )
+            if full_page.status_code == 200 and full_page.text:
+                if res := re.search(r"unrestrictedBoardsCount([\s])+=([\s\d]+);", full_page.text):
+                    total_pages = int(res[2])
+                    data["nbPage"] = total_pages
+                    data["state"] = "signed"
+                    data["pages"] = list(range(total_pages))
+        return data
 
     @lru_cache
     def _get_book_id(self) -> str:
@@ -304,6 +206,8 @@ class Izneo(SiteProcessor):
         if res := re.search(".+-(.+)/read", tmp_url.split("?")[0]):
             book_id = res[1]
         elif res := re.search(".+-(.+)", tmp_url.split("?")[0]):
+            book_id = res[1]
+        elif res := re.search(".+/(.+)", self.url.split("?")[0]):
             book_id = res[1]
         return book_id
 
