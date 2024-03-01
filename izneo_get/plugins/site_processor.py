@@ -27,11 +27,9 @@ class SiteProcessor:
     def is_valid_url(url: str) -> bool:
         return any(re.match(pattern, url) is not None for pattern in SiteProcessor.URL_PATTERNS)
 
-    def authenticate(self) -> None:
-        ...
+    def authenticate(self) -> None: ...
 
-    def get_book_infos(self) -> BookInfos:
-        ...
+    def get_book_infos(self) -> BookInfos: ...
 
     def download(self, forced_title: Optional[str] = None) -> str:
         print(f"URL: {self.url}")
@@ -52,10 +50,11 @@ class SiteProcessor:
         if forced_title:
             forced_title = get_name_from_pattern(forced_title, book_infos)
             print(f'Download "{clean_name(title_used)}" as "{clean_name(forced_title)}"')
-            title_used = clean_name(forced_title)
+            title_used = forced_title
         else:
             print(f'Download "{clean_name(title_used)}"')
-        save_path = f"{output_folder}/{clean_name(title_used)}"
+        title_used = clean_name(title_used)
+        save_path = f"{output_folder}/{title_used}"
 
         print(f"{book_infos.pages} pages expected")
 
@@ -82,11 +81,9 @@ class SiteProcessor:
         self.after_download()
         return save_path
 
-    def before_download(self) -> None:
-        ...
+    def before_download(self) -> None: ...
 
-    def after_download(self) -> None:
-        ...
+    def after_download(self) -> None: ...
 
     def post_process_image_content(self, content: bytes, page_num: int = 0) -> bytes:
         return content

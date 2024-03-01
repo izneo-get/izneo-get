@@ -2,6 +2,10 @@
 
 ## izneo_get.py
 
+### Version 1.1.1 (2024-03-01)
+
+- [FIX] Problème avec les noms de séries qui possèdent des caractères spéciaux.
+
 ### Version 1.1.0 (2024-02-02)
 
 - [NEW] Possibilité de télécharger les livres du site  `archive.org`.
