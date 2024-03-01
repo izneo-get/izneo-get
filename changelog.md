@@ -2,6 +2,26 @@
 
 ## izneo_get.py
 
+### Version 1.1.0 (2024-02-02)
+
+- [NEW] Possibilité de télécharger les livres du site  `archive.org`.
+
+### Version 1.0.5 (2023-12-01)
+
+- [FIX] Bug sur le traitement de l'extension ".zip".
+
+### Version 1.0.3 (2023-11-13)
+
+- [FIX] Gestion des erreurs quand une page n'est pas disponible sur Izneo.
+
+### Version 1.0.2 (2023-10-15)
+
+- [FIX] Valeurs par défaut quand il n'y a pas d'information sur un livre.
+
+### Version 1.0.1 (2023-10-07)
+
+- [FIX] Compatibilité avec les fichiers de médiathèque.
+
 ### Version 1.0.0 (2023-09-09)
 
 - [NEW] Possibilité d'utiliser l'application en mode interactif.

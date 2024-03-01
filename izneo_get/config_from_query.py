@@ -2,7 +2,7 @@ from enum import Enum
 import os
 import inquirer
 import re
-from typing import Callable
+from typing import Callable, Optional
 
 from izneo_get import tools
 
@@ -38,7 +38,7 @@ class ConfigQuery:
         self.save_config_as = save_config_as
 
     def update_config_by_command(self) -> Config:
-        choice: MenuItem = None
+        choice: Optional[MenuItem] = None
         while choice != MenuItem.QUIT:
             questions = [
                 inquirer.List(
@@ -71,7 +71,8 @@ class ConfigQuery:
             if not answer:
                 break
             choice = answer["action"]
-            self.update_item(choice)
+            if choice:
+                self.update_item(choice)
         return self.config
 
     def update_item(self, item: MenuItem):

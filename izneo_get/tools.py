@@ -5,8 +5,10 @@ import glob
 import html
 import io
 import os
+import random
 import re
 import shutil
+import string
 import cv2
 import inquirer
 import numpy as np
@@ -101,6 +103,15 @@ def http_get(
     )
 
 
+def http_post(
+    url: str, session: Optional[Session] = None, headers: Optional[Dict[str, str]] = None, **kwargs: Optional[Any]
+) -> requests.Response:
+    cookies = session.cookies if session else None
+    return requests_retry_session(session=session).post(
+        url, cookies=cookies, allow_redirects=True, headers=headers, **kwargs
+    )
+
+
 async def async_http_get(
     url: str, session: Optional[Session] = None, headers: Optional[Dict[str, str]] = None, **kwargs: Optional[Any]
 ) -> requests.Response:
@@ -173,7 +184,7 @@ def get_name_from_pattern(pattern: str, infos: BookInfos) -> str:
 def create_cbz(source_folder: str) -> str:
     print("Create CBZ...")
     zip_filepath = get_unique_name(f"{source_folder}.zip")
-    shutil.make_archive(zip_filepath.strip(".zip"), "zip", source_folder)
+    shutil.make_archive(re.sub(".zip$", "", zip_filepath, flags=re.IGNORECASE), "zip", source_folder)
     cbz_filepath = get_unique_name(f"{source_folder}.cbz")
     os.rename(zip_filepath, cbz_filepath)
     print(f"CBZ created: {cbz_filepath}")
@@ -321,3 +332,8 @@ def question_yes_no(message: str, default: bool = True, carousel: bool = True) -
     ]
     answer: Dict[str, bool] = inquirer.prompt(questions)
     return answer["answer"]
+
+
+def generate_random_string(length: int) -> str:
+    characters = string.ascii_letters + string.digits
+    return "".join(random.choice(characters) for _ in range(length))
