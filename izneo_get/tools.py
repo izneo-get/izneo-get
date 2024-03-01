@@ -65,7 +65,9 @@ def clean_name(name: str, directory: bool = False) -> str:
     return name
 
 
-def clean_attribute(attribute: str):
+def clean_attribute(attribute: str) -> str:
+    if not attribute:
+        return ""
     attribute = html.unescape(attribute)
     attribute = clean_name(attribute)
     return attribute
