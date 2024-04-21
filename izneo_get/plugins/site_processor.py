@@ -176,6 +176,7 @@ class SiteProcessor:
             enumerate(book_infos.page_urls),
             desc="Download pages",
             bar_format=BAR_FORMAT,
+            total=len(book_infos.page_urls),
         ):
             res = asyncio.run(
                 self._async_download_page(

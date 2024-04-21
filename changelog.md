@@ -2,6 +2,10 @@
 
 ## izneo_get.py
 
+### Version 1.1.2 (2024-04-21)
+
+- [FIX] Problème de barre de progression en mode synchrone.
+
 ### Version 1.1.1 (2024-03-01)
 
 - [FIX] Problème avec les noms de séries qui possèdent des caractères spéciaux.
