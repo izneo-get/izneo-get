@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
+import asyncio
 import os
 import re
 from typing import Dict, List, Optional
 
 import requests
-from ..config import Config, ImageFormat, OutputFormat
-from ..book_infos import BookInfos
-from ..tools import BAR_FORMAT, async_http_get, clean_name, get_image_type, get_name_from_pattern
 from tqdm.asyncio import tqdm
-import asyncio
+
+from ..book_infos import BookInfos
+from ..config import Config, ImageFormat, OutputFormat
+from ..tools import BAR_FORMAT, async_http_get, clean_name, get_image_type, get_name_from_pattern
 
 
 class SiteProcessor:
@@ -22,6 +23,8 @@ class SiteProcessor:
     def __init__(self, url: str = "", config: Optional[Config] = None) -> None:
         self.url = url
         self.config = config or Config()
+        if self.config.user_agent:
+            self.headers = {"User-Agent": self.config.user_agent}
 
     @staticmethod
     def is_valid_url(url: str) -> bool:
@@ -121,7 +124,7 @@ class SiteProcessor:
             print(f"\n[ERROR] Page {page_num} unavailable: {e}")
             return ""
 
-        if r.status_code == 404:
+        if r.status_code in (403, 404):
             if page_num < book_infos.pages:
                 print(f"\n[ERROR] Can't download page {str(page_num + 1)} ({str(book_infos.pages)} pages expected)")
             return ""

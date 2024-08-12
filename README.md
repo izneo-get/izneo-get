@@ -359,3 +359,11 @@ python -m pip install pytest
 ## Alternative sans installer Python (sous Windows uniquement)  
   
 - Vous pouvez télécharger uniquement le [binaire Windows](https://github.com/izneo-get/izneo-get/releases/latest) (expérimental).  
+
+### Mémo
+
+#### Mettre à jour le fichier `requirements.txt` depuis poetry
+
+```
+poetry export --without-hashes --without dev -f requirements.txt -o requirements.txt
+```

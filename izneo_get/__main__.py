@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-__version__ = "1.1.2"
+__version__ = "1.2.0"
 """
 Source : https://github.com/izneo-get/izneo-get
 
@@ -7,21 +7,21 @@ Ce script permet de récupérer une BD présente sur https://www.izneo.com/fr/ d
 
 """
 import importlib
-import re
 import os
-import sys
+import re
 import shutil
+import sys
 from typing import List, Optional, Tuple
 
 from .action import Action
 from .action_from_query import ActionQuery
-from .no_plugin_found_exception import NoPluginFOundException
-from .config_from_args import get_args
-from .tools import check_version, convert_images_in_folder, create_cbz
-from .plugins.site_processor import SiteProcessor
 from .config import Config, ImageFormat, OutputFormat
-from .config_from_query import ConfigQuery
+from .config_from_args import get_args
 from .config_from_file import get_config_from_file
+from .config_from_query import ConfigQuery
+from .no_plugin_found_exception import NoPluginFOundException
+from .plugins.site_processor import SiteProcessor
+from .tools import check_version, convert_images_in_folder, create_cbz
 
 # from .plugins.izneo import Izneo  # Force import for PyInstaller
 

@@ -2,6 +2,11 @@
 
 ## izneo_get.py
 
+### Version 1.2.0 (2024-08-12)
+
+- [FIX] Création de session dynamique pour les livres empruntés.
+- [UPDATE] Mise à jour des dépendances.
+
 ### Version 1.1.2 (2024-04-21)
 
 - [FIX] Problème de barre de progression en mode synchrone.

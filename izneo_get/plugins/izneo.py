@@ -1,28 +1,30 @@
 # -*- coding: utf-8 -*-
-from typing import Dict, List, Optional
-import requests
-import re
-import os
-import json
-from Crypto.Cipher import AES
-import base64
-import urllib.parse
 import asyncio
-from tqdm.asyncio import tqdm
+import base64
+import json
+import os
+import re
+import urllib.parse
 from functools import lru_cache
+from typing import Dict, List, Optional
+
+import requests
+from Crypto.Cipher import AES
+from tqdm.asyncio import tqdm
+
+from ..book_infos import BookInfos, ReadDirection
+from ..config import Config, ImageFormat, OutputFormat
 from ..tools import (
-    requests_retry_session,
+    BAR_FORMAT,
+    async_http_get,
+    clean_attribute,
     clean_name,
+    convert_image_if_needed,
     get_image_type,
     get_name_from_pattern,
-    clean_attribute,
-    async_http_get,
-    convert_image_if_needed,
     question_yes_no,
-    BAR_FORMAT,
+    requests_retry_session,
 )
-from ..config import Config, ImageFormat, OutputFormat
-from ..book_infos import BookInfos, ReadDirection
 from .site_processor import SiteProcessor
 
 
@@ -31,6 +33,8 @@ class Izneo(SiteProcessor):
         r"https://reader\.izneo\.com/read/(\d+)(\?exiturl=.+)?",
         r"https://www.izneo.com/(.+?)/(.+?)/(.+?)/(.+?)-(\d+)/(.+)-(\d+)",
         r"https://www.izneo.com/(.+?)/(.+?)/(.+?)(\?exiturl=.+)?",
+        r"https://izneo.com/(.+?)/(.+?)(\?exiturl=.+)?",
+        r"https://izneo.com/(.+?)/(.+?)/(.+?)(\?exiturl=.+)?",
     ]
     url: str = ""
     config: Config
@@ -51,11 +55,13 @@ class Izneo(SiteProcessor):
         return any(re.match(pattern, url) is not None for pattern in Izneo.URL_PATTERNS)
 
     def authenticate(self) -> None:
+        if sign := self._get_signature():
+            return self._init_session_from_url()
         if self.config.authentication_from_cache:
             session_id = self._authenticate_from_cache()
         else:
             session_id = self._authenticate_from_prompt()
-        self._init_session(session_id)
+        return self._init_session(session_id)
 
     def _authenticate_from_prompt(self) -> str:
         session_id = ""
@@ -103,6 +109,14 @@ class Izneo(SiteProcessor):
             domain=".izneo.com", name="c03aab1711dbd2a02ea11200dde3e3d1", value=session_id
         )
         self.session.cookies.set_cookie(cookie_obj)
+
+    def _init_session_from_url(self) -> None:
+        self.session = requests.Session()
+        self.session.max_redirects = 10
+        r = requests_retry_session(session=self.session).get(
+            self.url,
+            allow_redirects=True,
+        )
 
     def download(self, forced_title: Optional[str] = None) -> str:
         book_infos = self.get_book_infos()
@@ -167,28 +181,11 @@ class Izneo(SiteProcessor):
     def _download_book_infos(self):
         book_id = self._get_book_id()
         sign = self._get_signature()
-        cookies = self.session.cookies if self.session else None
         r = requests_retry_session(session=self.session).get(
             f"https://www.izneo.com/book/{book_id}" + (f"?{sign}" if sign else ""),
-            cookies=cookies,
             allow_redirects=True,
-            headers=self.headers,
         )
-        data = json.loads(r.text)["data"]
-        if sign:
-            full_page = requests_retry_session(session=self.session).get(
-                f"https://reader.izneo.com/read/{book_id}",
-                cookies=cookies,
-                allow_redirects=True,
-                headers=self.headers,
-            )
-            if full_page.status_code == 200 and full_page.text:
-                if res := re.search(r"unrestrictedBoardsCount([\s])+=([\s\d]+);", full_page.text):
-                    total_pages = int(res[2])
-                    data["nbPage"] = total_pages
-                    data["state"] = "signed"
-                    data["pages"] = list(range(total_pages))
-        return data
+        return json.loads(r.text)["data"]
 
     @lru_cache
     def _get_book_id(self) -> str:
