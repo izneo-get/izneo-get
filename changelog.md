@@ -2,9 +2,10 @@
 
 ## izneo_get.py
 
-### Version 1.2.0 (2024-08-12)
+### Version 1.2.1 (2024-08-12)
 
 - [FIX] Création de session dynamique pour les livres empruntés.
+- [FIX] Problème d'authentification sur `archive.org`.
 - [UPDATE] Mise à jour des dépendances.
 
 ### Version 1.1.2 (2024-04-21)

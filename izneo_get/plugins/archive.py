@@ -2,27 +2,29 @@
 import asyncio
 import os
 import random
-from typing import Dict, List, Optional
-import requests
+import re
 from functools import lru_cache
-from ..tools import (
-    generate_random_string,
-    http_post,
-    requests_retry_session,
-    clean_name,
-    get_image_type,
-    get_name_from_pattern,
-    clean_attribute,
-    async_http_get,
-    convert_image_if_needed,
-    question_yes_no,
-    BAR_FORMAT,
-)
-from .site_processor import SiteProcessor
+from http.cookiejar import LWPCookieJar
+from typing import Dict, List, Optional
+
+import requests
+
 from ..book_infos import BookInfos, ReadDirection
 from ..config import Config, OutputFormat
-import re
-from http.cookiejar import LWPCookieJar
+from ..tools import (
+    BAR_FORMAT,
+    async_http_get,
+    clean_attribute,
+    clean_name,
+    convert_image_if_needed,
+    generate_random_string,
+    get_image_type,
+    get_name_from_pattern,
+    http_post,
+    question_yes_no,
+    requests_retry_session,
+)
+from .site_processor import SiteProcessor
 
 
 class Archive(SiteProcessor):
@@ -57,7 +59,9 @@ class Archive(SiteProcessor):
         password = ""
         while not password:
             password = input("Password: ")
-        return self._authenticate_from_email(email, password)
+        self._authenticate_from_email(email, password)
+        # Not a typo, we need to authenticate again to get the session right.
+        self._authenticate_from_email(email, password)
 
     def data_to_boundary(self, boundary: str, data: Dict) -> str:
         body = []
