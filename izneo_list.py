@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-__version__ = "0.08.0"
+__version__ = "0.08.1"
 """
 Source : https://github.com/izneo-get/izneo-get
 
@@ -21,17 +21,18 @@ options:
   --full-only           Ne prend que les liens de BD disponible dans l'abonnement
   --force-title         Ajoute l'élément "--force-tilte" dans la sortie
 """
-import requests
-from requests.adapters import HTTPAdapter
-from urllib3.util import Retry
-import re
-import os
-import sys
 import argparse
 import configparser
-import time
-from bs4 import BeautifulSoup
 import json
+import os
+import re
+import sys
+import time
+
+import requests
+from bs4 import BeautifulSoup
+from requests.adapters import HTTPAdapter
+from urllib3.util import Retry
 
 
 def strip_tags(html):
@@ -253,9 +254,9 @@ if __name__ == "__main__":
     elif re.match("^http[s]*://.*", search):
         new_results = 0
         # On est dans un cas où on a une URL de série.
-        id = re.findall(".+-(\d+)/", search)
+        id = re.findall(r".+-(\d+)/", search)
         if not id:
-            id = re.findall(".+-(\d+)", search)
+            id = re.findall(r".+-(\d+)", search)
         id = id[0]
         new_results += parse_from_id(s, id, force_title=force_title)
     else:

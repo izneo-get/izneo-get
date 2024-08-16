@@ -77,6 +77,11 @@
 
 ## izneo_list.py
 
+### Version 0.08.01 (2024-08-16)
+
+- [FIX] Suppression d'un warning.
+
+
 ### Version 0.08 (2023-09-10)
 
 - [ADD] Possibilité de faire la liste de sa bibliothèque avec `izneo_list.py bibliotheque`.
