@@ -112,8 +112,8 @@ if __name__ == "__main__":
 
     if re.match(r"^http[s]://www.izneo.com/fr/panier-fin/(\d+)", url):
         # On est dans un cas où on a une URL de panier.
-        id = re.findall("(\d+)/", url)
+        id = re.findall(r"(\d+)/", url)
         if not id:
-            id = re.findall("(\d+)", url)
+            id = re.findall(r"(\d+)", url)
         id = id[0]
         parse_from_id(s, id)
