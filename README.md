@@ -8,6 +8,7 @@ Sites compatibles :
 
 - <https://archive.org/>
 - <https://www.izneo.com/fr/>
+- <https://www.webtoons.com>
 
 ## Utilisation en mode interactif
 
@@ -275,7 +276,7 @@ python izneo_basket.py https://www.izneo.com/fr/panier-fin/1020304
 ### Prérequis
 
 - Python 3.10+ (non testé avec les versions précédentes)
-- `poetry` (recommandé) ou `pip`
+- `uv`
 - Librairies SSL
 
 #### Sous Windows
@@ -309,51 +310,12 @@ git clone https://github.com/izneo-get/izneo-get.git
 cd izneo-get
 ```
 
-#### Avec poetry (recommandé)
+#### Avec uv
 
-- Créez un environnement virtuel Python dédié :  
-
-```cmd
-poetry shell
-```
-
-- Installez les dépendances :  
+- Créez un environnement virtuel Python dédié et installez les dépendances :  
 
 ```cmd
-poetry install
-```
-
-#### Avec pip
-
-- Créez un environnement virtuel Python dédié :  
-
-```cmd
-python -m venv env
-env\Scripts\activate
-python -m pip install --upgrade pip
-```
-
-- Installez les dépendances :  
-
-```cmd
-python -m pip install -r requirements.txt
-```
-
-En cas de problème, on peut installer les dépendances à la main :  
-
-```cmd
-cd izneo-get
-python -m venv env
-env\Scripts\activate
-python -m pip install --upgrade pip
-python -m pip install pycryptodome
-python -m pip install requests
-python -m pip install beautifulsoup4
-python -m pip install Pillow
-python -m pip install inquirer
-python -m pip install tqdm
-python -m pip install opencv-python
-python -m pip install pytest
+uv sync
 ```
   
 ## Alternative sans installer Python (sous Windows uniquement)  
@@ -362,8 +324,8 @@ python -m pip install pytest
 
 ### Mémo
 
-#### Mettre à jour le fichier `requirements.txt` depuis poetry
+#### Mettre à jour le fichier `requirements.txt` avec `uv`
 
-```
-poetry export --without-hashes --without dev -f requirements.txt -o requirements.txt
+```cmd
+uv pip compile --output-file requirements.txt pyproject.toml
 ```

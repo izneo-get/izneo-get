@@ -42,7 +42,7 @@ class SiteProcessor:
         # Si on n'a pas les informations de base, on arrête tout de suite.
         if not book_infos.title or not book_infos.pages:
             print("ERROR: Can't find book.")
-            self.after_download()
+            self.after_download([])
             return ""
 
         # Création du répertoire de destination.
@@ -68,7 +68,7 @@ class SiteProcessor:
             and os.path.exists(f"{save_path}.cbz")
         ):
             print(f'"{save_path}.cbz" already exists, skipping.')
-            self.after_download()
+            self.after_download([])
             return ""
         self._create_destination_folder(save_path)
 
@@ -81,12 +81,12 @@ class SiteProcessor:
         print(f"{len(files_downloaded) - count_empty} pages downloaded")
         if count_empty:
             print(f"{count_empty} pages skipped")
-        self.after_download()
+        self.after_download(files_downloaded)
         return save_path
 
     def before_download(self) -> None: ...
 
-    def after_download(self) -> None: ...
+    def after_download(self, files_downloaded: List[str]) -> None: ...
 
     def post_process_image_content(self, content: bytes, page_num: int = 0) -> bytes:
         return content
