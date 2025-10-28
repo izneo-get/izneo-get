@@ -145,7 +145,7 @@ class Archive(SiteProcessor):
             "Sec-Fetch-Dest": "image",
         }
 
-    def after_download(self) -> None:
+    def after_download(self, files_downloaded: List[str]) -> None:
         self.return_loan()
 
     def loan(self):

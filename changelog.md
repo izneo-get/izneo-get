@@ -2,6 +2,10 @@
 
 ## izneo_get.py
 
+### Version 1.2.2 (2025-10-28)
+
+- [NEW] Ajout de la compatibilité avec le site `webtoons.com`.
+
 ### Version 1.2.1 (2024-08-12)
 
 - [FIX] Création de session dynamique pour les livres empruntés.
@@ -80,7 +84,6 @@
 ### Version 0.08.01 (2024-08-16)
 
 - [FIX] Suppression d'un warning.
-
 
 ### Version 0.08 (2023-09-10)
 
