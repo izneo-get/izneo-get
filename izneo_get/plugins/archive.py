@@ -90,6 +90,7 @@ class Archive(SiteProcessor):
         self.session.cookies.save(ignore_discard=True)
 
     def _authenticate_from_cache(self) -> None:
+        os.makedirs(self.config.cache_folder, exist_ok=True)
         cache_file = f"{self.config.cache_folder}/{self.cache_file}"
         self.session = requests.Session()
         self.session.cookies = LWPCookieJar(filename=cache_file)

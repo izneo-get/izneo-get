@@ -72,6 +72,7 @@ class Izneo(SiteProcessor):
 
     def _authenticate_from_cache(self) -> str:
         session_id = None
+        os.makedirs(self.config.cache_folder, exist_ok=True)
         cache_file = f"{self.config.cache_folder}/{self.cache_file}"
         if os.path.exists(cache_file):
             with open(cache_file, "r") as f:

@@ -2,6 +2,10 @@
 
 ## izneo_get.py
 
+### Version 1.2.3 (2025-11-29)
+
+- [FIX] Gestion du répertoire de cache.
+
 ### Version 1.2.2 (2025-10-28)
 
 - [NEW] Ajout de la compatibilité avec le site `webtoons.com`.
