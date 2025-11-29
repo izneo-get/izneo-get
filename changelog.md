@@ -5,6 +5,7 @@
 ### Version 1.2.3 (2025-11-29)
 
 - [FIX] Gestion du répertoire de cache.
+- [FIX] Gestion de l'obfuscation de `archive.org`.
 
 ### Version 1.2.2 (2025-10-28)
 

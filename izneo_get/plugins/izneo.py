@@ -66,7 +66,9 @@ class Izneo(SiteProcessor):
     def _authenticate_from_prompt(self) -> str:
         session_id = ""
         while not session_id:
-            session_id = input('Session ID (value of cookie named "c03aab1711dbd2a02ea11200dde3e3d1"): ')
+            session_id = input(
+                'Session ID (value of cookie named "c03aab1711dbd2a02ea11200dde3e3d1"): '
+            )
         self._save_cache(session_id)
         return session_id
 
@@ -104,10 +106,14 @@ class Izneo(SiteProcessor):
         # Create session and cookie.
         self.session = requests.Session()
         self.session.max_redirects = 10
-        cookie_obj = requests.cookies.create_cookie(domain=".izneo.com", name="lang", value="fr")
+        cookie_obj = requests.cookies.create_cookie(
+            domain=".izneo.com", name="lang", value="fr"
+        )
         self.session.cookies.set_cookie(cookie_obj)
         cookie_obj = requests.cookies.create_cookie(
-            domain=".izneo.com", name="c03aab1711dbd2a02ea11200dde3e3d1", value=session_id
+            domain=".izneo.com",
+            name="c03aab1711dbd2a02ea11200dde3e3d1",
+            value=session_id,
         )
         self.session.cookies.set_cookie(cookie_obj)
 
@@ -123,21 +129,25 @@ class Izneo(SiteProcessor):
         book_infos = self.get_book_infos()
 
         if book_infos.custom_fields and book_infos.custom_fields["state"] == "preview":
-            print(f"WARNING: with your credentials, only preview is available ({book_infos.pages} pages).")
+            print(
+                f"WARNING: with your credentials, only preview is available ({book_infos.pages} pages)."
+            )
             answer = question_yes_no("Continue anyway", default=False)
             if answer == False:
                 return ""
         return super().download(forced_title)
 
-    def post_process_image_content(self, content: bytes, page_num: int = 0) -> bytes:
+    def post_process_image_content(
+        self, response: requests.models.Response, page_num: int = 0
+    ) -> bytes:
         book_infos = self.get_book_infos()
         if self._get_signature():
-            return content
+            return response.content
         if not book_infos or not book_infos.custom_fields:
-            return content
+            return response.content
         key = book_infos.custom_fields["pages"][page_num]["key"]
         iv = book_infos.custom_fields["pages"][page_num]["iv"]
-        return Izneo.uncrypt_image(content, key, iv)
+        return Izneo.uncrypt_image(response.content, key, iv)
 
     @staticmethod
     def uncrypt_image(crypted_content: bytes, key: str, iv: str) -> bytes:
@@ -154,12 +164,21 @@ class Izneo(SiteProcessor):
         book_infos = book_infos if isinstance(book_infos, dict) else {}
         title = clean_attribute(book_infos.get("title", ""))
         subtitle = clean_attribute(book_infos.get("subtitle", ""))
-        read_direction = ReadDirection.RTOL if book_infos.get("readDirection", "") == "rtl" else ReadDirection.LTOR
+        read_direction = (
+            ReadDirection.RTOL
+            if book_infos.get("readDirection", "") == "rtl"
+            else ReadDirection.LTOR
+        )
         page_urls = []
         for page_num, _ in enumerate(book_infos.get("pages", None)):
-            url = f"https://www.izneo.com/book/{book_id}/{page_num}?type=full" + (f"&{sign}" if sign else "")
+            url = f"https://www.izneo.com/book/{book_id}/{page_num}?type=full" + (
+                f"&{sign}" if sign else ""
+            )
             if sign:
-                url = f"https://reader.izneo.com/read/{book_id}/{page_num}?quality=HD" + (f"&{sign}" if sign else "")
+                url = (
+                    f"https://reader.izneo.com/read/{book_id}/{page_num}?quality=HD"
+                    + (f"&{sign}" if sign else "")
+                )
             page_urls.append(url)
 
         self._book_infos = BookInfos(
@@ -175,7 +194,10 @@ class Izneo(SiteProcessor):
             read_direction=read_direction,
             description=book_infos.get("synopsis", ""),
             page_urls=page_urls,
-            custom_fields={"pages": book_infos.get("pages", None), "state": book_infos.get("state", "")},
+            custom_fields={
+                "pages": book_infos.get("pages", None),
+                "state": book_infos.get("state", ""),
+            },
         )
         return self._book_infos
 

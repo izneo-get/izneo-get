@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 import asyncio
+import base64
+import hashlib
 import os
 import random
 import re
@@ -8,6 +10,8 @@ from http.cookiejar import LWPCookieJar
 from typing import Dict, List, Optional
 
 import requests
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
 from ..book_infos import BookInfos, ReadDirection
 from ..config import Config, OutputFormat
@@ -43,7 +47,9 @@ class Archive(SiteProcessor):
 
     @staticmethod
     def is_valid_url(url: str) -> bool:
-        return any(re.match(pattern, url) is not None for pattern in Archive.URL_PATTERNS)
+        return any(
+            re.match(pattern, url) is not None for pattern in Archive.URL_PATTERNS
+        )
 
     def authenticate(self) -> None:
         if self.config.authentication_from_cache:
@@ -83,7 +89,9 @@ class Archive(SiteProcessor):
         data = self.data_to_boundary(boundary, data)
         if not self.session:
             self._init_session()
-        response = self.session.post("https://archive.org/account/login", data=data, headers=headers)
+        response = self.session.post(
+            "https://archive.org/account/login", data=data, headers=headers
+        )
         if response.status_code != 200:
             print("ERROR: Can't authenticate")
             exit()
@@ -117,9 +125,15 @@ class Archive(SiteProcessor):
         # subtitle = clean_attribute(book_infos["brOptions"].get("subPrefix", ""))
         subtitle = ""
         read_direction = (
-            ReadDirection.RTOL if book_infos["brOptions"].get("pageProgression", "") == "rl" else ReadDirection.LTOR
+            ReadDirection.RTOL
+            if book_infos["brOptions"].get("pageProgression", "") == "rl"
+            else ReadDirection.LTOR
         )
-        page_urls = [page["uri"] + "&rotate=0&scale=0" for item in book_infos["brOptions"]["data"] for page in item]
+        page_urls = [
+            page["uri"] + "&rotate=0&scale=0"
+            for item in book_infos["brOptions"]["data"]
+            for page in item
+        ]
 
         self._book_infos = BookInfos(
             title=title,
@@ -131,7 +145,10 @@ class Archive(SiteProcessor):
             read_direction=read_direction,
             description=book_infos["metadata"].get("description", ""),
             page_urls=page_urls,
-            custom_fields={"metadata": book_infos["metadata"], "book_id": book_infos["brOptions"]["bookId"]},
+            custom_fields={
+                "metadata": book_infos["metadata"],
+                "book_id": book_infos["brOptions"]["bookId"],
+            },
         )
         return self._book_infos
 
@@ -153,7 +170,9 @@ class Archive(SiteProcessor):
         book_id = self._get_book_id()
 
         data = {"action": "grant_access", "identifier": book_id}
-        response = self.session.post("https://archive.org/services/loans/loan/searchInside.php", data=data)
+        response = self.session.post(
+            "https://archive.org/services/loans/loan/searchInside.php", data=data
+        )
         if response.status_code != 200 or not response.json()["success"]:
             print(f"ERROR: Can't loan: {response.status_code}")
 
@@ -161,7 +180,9 @@ class Archive(SiteProcessor):
         headers = {"Content-Type": f"multipart/form-data; boundary={boundary}"}
         data = {"action": "browse_book", "identifier": book_id}
         data = self.data_to_boundary(boundary, data)
-        response = self.session.post("https://archive.org/services/loans/loan/", headers=headers, data=data)
+        response = self.session.post(
+            "https://archive.org/services/loans/loan/", headers=headers, data=data
+        )
 
         if response.status_code == 401 and response.reason == "Unauthorized":
             print("ERROR: Can't loan. Session expired?")
@@ -170,7 +191,9 @@ class Archive(SiteProcessor):
 
         data = {"action": "create_token", "identifier": book_id}
         data = self.data_to_boundary(boundary, data)
-        response = self.session.post("https://archive.org/services/loans/loan/", data=data, headers=headers)
+        response = self.session.post(
+            "https://archive.org/services/loans/loan/", data=data, headers=headers
+        )
         if "token" in response.text:
             self._book_infos = None
             self.get_book_infos()
@@ -179,7 +202,9 @@ class Archive(SiteProcessor):
     def return_loan(self):
         book_id = self._get_book_id()
         data = {"action": "return_loan", "identifier": book_id}
-        response = self.session.post("https://archive.org/services/loans/loan/", data=data)
+        response = self.session.post(
+            "https://archive.org/services/loans/loan/", data=data
+        )
         if response.status_code == 200 and response.json()["success"]:
             print(f"INFO: Book returned: {self._book_infos.title}")
 
@@ -213,7 +238,97 @@ class Archive(SiteProcessor):
     @lru_cache
     def _get_book_id(self) -> str:
         book_infos = self.get_book_infos()
-        return book_infos.custom_fields.get("book_id", "") if book_infos.custom_fields else ""
+        return (
+            book_infos.custom_fields.get("book_id", "")
+            if book_infos.custom_fields
+            else ""
+        )
+
+    def post_process_image_content(
+        self, response: requests.models.Response, page_num: int = 0
+    ) -> bytes:
+        obfuscation_header = response.headers.get("x-obfuscate")
+        if not obfuscation_header:
+            return response.content
+
+        try:
+            version, counter_b64 = obfuscation_header.split("|")
+            if version != "1":
+                raise ValueError(f"Unsupported obfuscation version: {version}")
+        except ValueError as e:
+            print(f"Obfuscation error: {e}")
+            return response.content
+
+        aes_key = "/" + "/".join(response.url.split("/")[3:])
+        image_buffer = response.content
+
+        DECRYPT_SIZE = 1024
+
+        if len(image_buffer) < DECRYPT_SIZE:
+            print(f"Error: Image too small ({len(image_buffer)} octets)")
+            return
+
+        encrypted_fragment = image_buffer[:DECRYPT_SIZE]
+        remaining_image = image_buffer[DECRYPT_SIZE:]
+
+        try:
+            decrypted_fragment = decrypt_data(encrypted_fragment, aes_key, counter_b64)
+        except Exception as e:
+            print(f"Error: {e}")
+            return
+
+        decrypted_image_buffer = decrypted_fragment + remaining_image
+
+        return decrypted_image_buffer
+
+
+def decrypt_data(buffer_fragment: bytes, aes_key: str, counter_b64: str) -> bytes:
+    """
+    Decrypts a data fragment using AES-CTR, reproducing the JS logic.
+
+    Args:
+        buffer_fragment: The binary fragment to decrypt (the first 1024 bytes).
+        aes_key: The AES key string (the URI path).
+        counter_b64: The counter encoded in Base64 from the X-Obfuscate header.
+
+    Returns:
+        The decrypted binary data.
+    """
+    # 1. Hash the key with SHA-1 and truncate
+    sha1_hash = hashlib.sha1(aes_key.encode("utf-8")).digest()
+
+    # 2. Use the first 16 bytes of the SHA-1 hash as AES key
+    key = sha1_hash[:16]  # Key of 16 bytes for AES-128
+
+    # 3. Decode the counter Base64
+    try:
+        iv_counter = base64.b64decode(counter_b64)
+    except Exception as e:
+        raise ValueError(f"Error: Base64 counter decoding failed: {e}")
+
+    # Verify the size of the counter/IV (must be 16 bytes for AES-CTR)
+    if len(iv_counter) != 16:
+        # The counter size must be 16 bytes (128 bits) for AES-CTR mode
+        # The specified 64-bit length in JS is not consistent with the 16-byte IV
+        # The JS implementation seems to use the first 8 bytes as IV and the next 8 as counter.
+        # We will assume that the complete IV is the Base64 decoded 16 bytes.
+        # If the decoded counter is not 16 bytes, it could indicate a JS implementation issue
+        # or non-standard encoding. In doubt, we assume 16 bytes.
+        print(
+            f"Warning: Decoded counter length: {len(iv_counter)} bytes (expected 16)."
+        )
+
+    # 4. AES-CTR decryption
+    # length: 64 in JS indicates a 64-bit segment to use as counter,
+    # which is the default for many 16-byte IVs.
+    cipher = Cipher(
+        algorithms.AES(key), modes.CTR(iv_counter), backend=default_backend()
+    )
+
+    decryptor = cipher.decryptor()
+    decrypted_data = decryptor.update(buffer_fragment) + decryptor.finalize()
+
+    return decrypted_data
 
 
 def init(url: str = "", config: Optional[Config] = None) -> Archive:
