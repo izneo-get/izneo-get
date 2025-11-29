@@ -8,18 +8,18 @@ blessed==1.20.0
     # via inquirer
 certifi==2024.7.4
     # via requests
+cffi==2.0.0
+    # via cryptography
 charset-normalizer==3.3.2
     # via requests
 colorama==0.4.6
-    # via
-    #   pytest
-    #   tqdm
+    # via tqdm
+cryptography==46.0.3
+    # via izneo-get (pyproject.toml)
 editor==1.6.6
     # via inquirer
 idna==3.7
     # via requests
-iniconfig==2.0.0
-    # via pytest
 inquirer==3.4.1
     # via izneo-get (pyproject.toml)
 jinxed==1.3.0
@@ -30,15 +30,12 @@ numpy==2.2.6
     #   opencv-python
 opencv-python==4.12.0.88
     # via izneo-get (pyproject.toml)
-packaging==24.1
-    # via pytest
 pillow==10.4.0
     # via izneo-get (pyproject.toml)
-pluggy==1.5.0
-    # via pytest
+pycparser==2.23
+    # via cffi
 pycryptodome==3.23.0
     # via izneo-get (pyproject.toml)
-## pytest has been moved to optional/dev in pyproject.toml
 readchar==4.2.0
     # via inquirer
 requests==2.32.5
